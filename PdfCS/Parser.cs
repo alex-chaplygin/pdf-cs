@@ -50,5 +50,16 @@ namespace PdfCS
                 NextChar();
             }
         }
+
+	public object ReadNull()
+        {
+            string f = "";
+            for (int i = 0; i < 3; i++)
+                f += NextChar();
+            
+            if ( f!= "ull")
+                throw new  Exception("Ошибка в null");
+            return null;
+        }
     }
 }
