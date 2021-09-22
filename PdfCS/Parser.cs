@@ -9,8 +9,8 @@ namespace PdfCS
 {
     class Parser
     {
-        private Stream stream;
-        private char lastChar;
+        Stream stream;
+        char lastChar;
 
         public Parser(Stream s)
         {
@@ -57,9 +57,35 @@ namespace PdfCS
             for (int i = 0; i < 3; i++)
                 f += NextChar();
             
-            if ( f!= "ull")
+            if (f != "ull")
                 throw new  Exception("Ошибка в null");
             return null;
+        }
+
+	public bool ReadBoolean()
+        {
+            if (lastChar == 't')
+            {
+                string _true = "true";
+                for (int i = 1; i < 5; i++)
+                    if (lastChar == _true[i-1])
+                        NextChar();
+                    else
+                        throw new Exception("Ошибка Boolean");
+                return true;
+            }
+            else if (lastChar == 'f')
+            {
+                string _false = "false";
+                for (int i = 1; i < 6; i++)
+                    if (lastChar == _false[i - 1])
+                        NextChar();
+                    else
+                        throw new Exception("Ошибка Boolean");
+                return false;
+            }
+            else
+                throw new Exception("Ошибка Boolean");
         }
     }
 }
