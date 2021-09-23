@@ -87,5 +87,18 @@ namespace PdfCS
             else
                 throw new Exception("Ошибка Boolean");
         }
+
+	public void SkipEndOfLine()
+        {
+            if (lastChar == '\n')
+                NextChar();
+            else if (lastChar == '\r')
+            {
+                if (NextChar() != '\n')
+                    throw new Exception("Ошибка при переводе строки");
+                NextChar();
+            }
+
+        }
     }
 }
