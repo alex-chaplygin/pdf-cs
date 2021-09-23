@@ -23,14 +23,14 @@ namespace PdfCS
             return lastChar;
         }
 
-        public bool isWhiteSpace(char c)
+        public static bool isWhiteSpace(char c)
         {
             string whiteSpaces = "\x00\t\r\n \x0c";
 
             return whiteSpaces.IndexOf(c) != -1;
         }
 
-        public bool isDelimeter(char c)
+        public static bool isDelimeter(char c)
         {
             string delimeters = "()<>{}[]/%";
 
@@ -44,7 +44,7 @@ namespace PdfCS
 
         public void SkipWhitespace()
         {
-            while (lastChar == '%' || isWhiteSpace(lastChar))
+            while (lastChar == '%' || Parser.isWhiteSpace(lastChar))
             {
                 if (lastChar == '%') SkipComment();
                 NextChar();
