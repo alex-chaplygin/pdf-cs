@@ -7,10 +7,10 @@ using System.IO;
 
 namespace PdfCS
 {
-    class Parser
+    public class Parser
     {
-        Stream stream;
-        char lastChar;
+        private Stream stream;
+        private char lastChar;
 
         public Parser(Stream s)
         {
@@ -23,18 +23,18 @@ namespace PdfCS
             return lastChar;
         }
 
-        public static bool isWhiteSpace(char c)
+        public static bool IsWhitespace(char c)
         {
-            string whiteSpaces = "\x00\t\r\n \x0c";
+            string w = "\x00\t\r\n \x0c";
 
-            return whiteSpaces.IndexOf(c) != -1;
+            return w.IndexOf(c) != -1;
         }
 
-        public static bool isDelimeter(char c)
+        public static bool IsDelimeter(char c)
         {
-            string delimeters = "()<>{}[]/%";
+            string d = "()<>{}[]/%";
 
-            return delimeters.IndexOf(c) != -1;
+            return d.IndexOf(c) != -1;
         }
 
         public void SkipComment()
@@ -44,9 +44,10 @@ namespace PdfCS
 
         public void SkipWhitespace()
         {
-            while (lastChar == '%' || Parser.isWhiteSpace(lastChar))
-            {
-                if (lastChar == '%') SkipComment();
+            while (lastChar == '%' || Parser.IsWhitespace(lastChar))
+	    {
+                if (lastChar == '%')
+		    SkipComment();
                 NextChar();
             }
         }
@@ -54,9 +55,9 @@ namespace PdfCS
 	public object ReadNull()
         {
             string f = "";
+
             for (int i = 0; i < 3; i++)
                 f += NextChar();
-            
             if (f != "ull")
                 throw new  Exception("Ошибка в null");
             return null;
@@ -64,11 +65,12 @@ namespace PdfCS
 
 	public bool ReadBoolean()
         {
+	    // Случай true
             if (lastChar == 't')
             {
                 string _true = "true";
                 for (int i = 1; i < 5; i++)
-                    if (lastChar == _true[i-1])
+                    if (lastChar == _true[i - 1])
                         NextChar();
                     else
                         throw new Exception("Ошибка Boolean");
@@ -79,13 +81,13 @@ namespace PdfCS
                 string _false = "false";
                 for (int i = 1; i < 6; i++)
                     if (lastChar == _false[i - 1])
-                        NextChar();
+			NextChar();
                     else
                         throw new Exception("Ошибка Boolean");
                 return false;
             }
             else
-                throw new Exception("Ошибка Boolean");
+		throw new Exception("Ошибка Boolean");
         }
 
 	public void SkipEndOfLine()
