@@ -45,7 +45,7 @@
 - Указывать тип в цикле foreach
 >	    foreach (char c in str)
 - Для ввода-вывода, где нужно закрывать файл или уничтожать объект использовать using
->    using (StreamReader sr = new StreamReader(file))
->    {
+>     using (StreamReader sr = new StreamReader(file))
+>     {
 >		sr.ReadLine();
->    }
+>	}
