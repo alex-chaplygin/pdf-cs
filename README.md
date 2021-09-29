@@ -17,9 +17,9 @@
 - Открывающая скобка { на новой строке
 >  while (lastChar == '%' || Parser.IsWhitespace(lastChar))
 >  {
->       if (lastChar == '%')
->  		      SkipComment();
->      NextChar();
+>	if (lastChar == '%')
+>  	   	     SkipComment();
+>	NextChar();
 >  }
 - Одно объявление переменной на строку кода
 - Длинные строки разбиваются
