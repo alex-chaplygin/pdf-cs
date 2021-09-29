@@ -15,12 +15,12 @@
 >         else
 >                        throw new Exception("Ошибка Boolean");
 - Открывающая скобка { на новой строке
->          while (lastChar == '%' || Parser.IsWhitespace(lastChar))
->  	    {
->               if (lastChar == '%')
+>  while (lastChar == '%' || Parser.IsWhitespace(lastChar))
+>  {
+>       if (lastChar == '%')
 >  		      SkipComment();
->               NextChar();
->           }
+>      NextChar();
+>  }
 - Одно объявление переменной на строку кода
 - Длинные строки разбиваются
 - Одна пустая строка между методами и объявлениями полей класса
