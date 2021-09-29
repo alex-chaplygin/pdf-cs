@@ -11,7 +11,10 @@ namespace PdfCS
     {
         static void Main(string[] args)
         {
-	    Print(ASCII85.Decode(File.ReadAllBytes(args[0])));
+	    Parser p = new Parser(File.OpenRead(args[0]));
+	    p.NextChar();
+	    Console.WriteLine(p.ReadKeyword());
+//	    Print(ASCII85.Decode(File.ReadAllBytes(args[0])));
         }
 
 	static void Print(byte[] arr)

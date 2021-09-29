@@ -100,7 +100,15 @@ namespace PdfCS
                     throw new Exception("Ошибка при переводе строки");
                 NextChar();
             }
-
         }
+
+	public string ReadKeyword()
+	{
+	    string res = lastChar.ToString();
+	    while (lastChar != '\uffff' && !Parser.IsWhitespace(lastChar) &&
+		   !Parser.IsDelimeter(lastChar))
+		res += NextChar();
+	    return res.Substring(0, res.Length - 1);
+	}
     }
 }
