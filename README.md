@@ -10,9 +10,9 @@
 - Отступы в выражениях
 > for (int i = 1; i < 5; i++)
 - Один оператор на строку кода
->                    if (lastChar == _false[i - 1])
+>         if (lastChar == _false[i - 1])
 >			  NextChar();
->                   else
+>         else
 >                        throw new Exception("Ошибка Boolean");
 - Открывающая скобка { на новой строке
 >          while (lastChar == '%' || Parser.IsWhitespace(lastChar))
