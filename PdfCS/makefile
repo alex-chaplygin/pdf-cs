@@ -1,4 +1,4 @@
-src=Program.cs Filters/ASCII85.cs Parser.cs
+src=Program.cs Filters/*.cs Parser.cs
 
 /tmp/Program.exe:	$(src)
 	dmcs $(src) -out:/tmp/Program.exe
