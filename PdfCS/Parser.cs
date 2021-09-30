@@ -110,5 +110,29 @@ namespace PdfCS
 		res += NextChar();
 	    return res.Substring(0, res.Length - 1);
 	}
+
+	public object ReadNumber()
+        {
+            string str = "";
+            int resi;
+            double resd;
+            
+            while (lastChar != '\uffff' && 
+                (lastChar == '+' || lastChar == '-' || lastChar == '.' || Char.IsDigit(lastChar)))
+            {
+                str += lastChar;
+                NextChar();
+            }
+            str = str.Replace('.', ',');
+            if (str.IndexOf(",") < 0)
+                if (int.TryParse(str, out resi))
+                    return resi;
+                else
+                    throw new Exception("Ошибка в числе: " + str);
+            else if (double.TryParse(str, out resd))
+                return resd;
+            else
+                throw new Exception("Ошибка в числе: " + str);
+        }
     }
 }
