@@ -134,5 +134,19 @@ namespace PdfCS
             else
                 throw new Exception("Ошибка в числе: " + str);
         }
+
+	public string ReadNameObject()
+        {
+            string res = NextChar().ToString();
+            while (lastChar != '\uffff')
+            {
+                if (lastChar == '\x00')
+                    throw new Exception("В имени содержится неверный символ '0'");
+                else if (Parser.IsWhitespace(lastChar) || Parser.IsDelimeter(lastChar))
+                    break;
+                res += NextChar();
+            }
+            return res.Substring(0, res.Length - 1); ;
+        }
     }
 }
