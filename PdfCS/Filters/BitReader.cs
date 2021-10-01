@@ -41,8 +41,8 @@ namespace PdfCS
 
             for (int i = 0; i < num; i++)
 	    {
-                res += GetBit();
 		res <<= 1;
+                res += GetBit();
 	    }
             return res;
         }
