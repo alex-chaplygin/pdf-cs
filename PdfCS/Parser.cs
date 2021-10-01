@@ -148,5 +148,28 @@ namespace PdfCS
             }
             return res.Substring(0, res.Length - 1); ;
         }
+
+	public byte[] ReadHex()
+	{
+	    List<byte> bytes = new List<byte>();
+	    string s = "";
+
+	    while (lastChar != '\uffff')
+	    {
+		if (NextChar() == '>')
+		    break;
+		else if (Char.IsDigit(lastChar) || lastChar >= 'a' && lastChar <= 'f' ||
+		    lastChar >= 'A' && lastChar <= 'F')
+		    s += lastChar;
+		if (s.Length == 2)
+		{
+		    bytes.Add(Convert.ToByte(s, 16));
+		    s = "";
+		}
+	    }
+	    if (s != "")
+		bytes.Add(Convert.ToByte(s + "0", 16));
+	    return bytes.ToArray();
+	}
     }
 }
