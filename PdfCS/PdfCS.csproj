@@ -46,6 +46,7 @@
     <Compile Include="Parser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Filters\ASCII85.cs" />
+    <Compile Include="Filters\ASCIIHex.cs" />
     <Compile Include="Filters\BitReader.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

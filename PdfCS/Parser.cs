@@ -73,7 +73,7 @@ namespace PdfCS
                     if (lastChar == _true[i - 1])
                         NextChar();
                     else
-                        throw new Exception("Ошибка Boolean");
+                        throw new Exception("Ошибка true Boolean");
                 return true;
             }
             else if (lastChar == 'f')
@@ -83,11 +83,11 @@ namespace PdfCS
                     if (lastChar == _false[i - 1])
 			NextChar();
                     else
-                        throw new Exception("Ошибка Boolean");
+                        throw new Exception("Ошибка false Boolean");
                 return false;
             }
             else
-		throw new Exception("Ошибка Boolean");
+		throw new Exception("Неверный Boolean");
         }
 
 	public void SkipEndOfLine()
@@ -169,6 +169,8 @@ namespace PdfCS
 		    s = "";
 		}
 	    }
+	    if (lastChar == '\uffff')
+		throw new Exception("Нет скобки в ReadHex");
 	    if (s != "")
 		bytes.Add(Convert.ToByte(s + "0", 16));
 	    return bytes.ToArray();
