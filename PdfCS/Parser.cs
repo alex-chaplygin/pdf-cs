@@ -161,6 +161,8 @@ namespace PdfCS
 		else if (Char.IsDigit(lastChar) || lastChar >= 'a' && lastChar <= 'f' ||
 		    lastChar >= 'A' && lastChar <= 'F')
 		    s += lastChar;
+		else
+		    throw new Exception("Неверный символ в ReadHex: " + lastChar);
 		if (s.Length == 2)
 		{
 		    bytes.Add(Convert.ToByte(s, 16));
