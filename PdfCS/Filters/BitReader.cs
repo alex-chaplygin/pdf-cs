@@ -71,7 +71,7 @@ namespace PdfCS
         /// <returns>
         /// прочитанный бит
         /// </returns>
-        public int GetBitLS()
+        public int GetBitMS()
         {
             if (bytePos >= array.Length)
                 throw new Exception("Выход за пределы массива -> BitReader, GetBit");
