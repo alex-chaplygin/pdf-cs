@@ -306,5 +306,80 @@ namespace PdfCS
 		bytes.Add(Convert.ToByte(s + "0", 16));
 	    return bytes.ToArray();
 	}
+
+	/// <summary>
+	///   Читает строку из 0 или более символов внутри круглых скобок
+	/// первый символ '(' уже прочитан
+	/// Строка заключена в скобки, может содержать внутри любые символы, в том числе сбалансированные скобки:
+	/// (This is a string)
+	/// (Strings may contain newlines
+	/// and such.)
+	/// (Strings may contain balanced parentheses ( ) and
+	/// special characters ( * ! & } ^ % and so on ).)
+	/// (The following is an empty string.) ()
+	/// (It has zero (0) length.)
+	/// Если встречается символ '\', то необходимо обработать следующий символ
+	/// считаются одним символом следующие последовательности: \n\r\t\b\f()\\
+	/// \ddd, где ddd - восьмиричный код символа
+	/// Если после '\' идет перевод строки, то он исключается из результирующей строки
+	/// (These
+	/// two strings
+	/// are the same.)
+	/// (These two strings are the same.)
+	/// Если в строке встречается перевод строки, то он записывается в результирующую строку как '\n' (убирая '\r' если есть)
+	/// (This string has an end-of-line at the end of it.
+	/// )
+	/// (So does this one .\n)
+	/// Восьмиричная последовательность кодирует непечатаемые символы
+	/// (This string contains \245two octal characters\307.)
+	/// Эта последовательность может состоять из одного, двух или трех цифр, больше не должны учитываться.
+	/// Пустые старшие места заполняются нулями.
+	/// the literal (\0053)
+	/// denotes a string containing two characters, \005 (Control-E) followed by the digit 3, whereas both
+	/// (\053) and (\53) denote strings containing the single character \053, a plus sign (+).
+	/// </summary>
+        /// <returns>
+        /// полученная строка в виде массива символов
+        /// </returns>
+	public char[] ReadString()
+        {
+            string charArray = "";
+            int count = 1;
+            string number = "";
+            string tabIn = "nrtfavb\\";
+            string tabOut = "\n\r\t\f\a\v\b\\";
+            while (count > 0)
+            {        
+                NextChar();
+                if (lastChar == '\uffff') throw new Exception("Ошибка, конец файла внутри строки");
+                else if (lastChar == '(')
+                    count++;
+                else if (lastChar == ')')
+                    count--;
+                else if (lastChar == '\\')
+                {
+                    NextChar();
+                    if(Parser.IsWhitespace(lastChar))
+                        SkipEndOfLine();
+                    else if (tabIn.Contains(lastChar))
+                        lastChar = tabOut[tabIn.IndexOf(lastChar)];
+                    else if (lastChar >= '0' && lastChar <= '7')
+                    {
+                        number = "";                     
+                        for (int i = 0; i < 3; i++)
+                        {
+                            if (lastChar >= '0' && lastChar <= '7')
+                                number += lastChar;
+                            else
+                                break;
+                            NextChar();
+                        }
+                        charArray += Convert.ToInt32(number, 8);
+                    }
+                }
+                charArray += lastChar;
+            }
+            return charArray.Remove(charArray.Length - 1).ToCharArray();
+        }
     }
 }
