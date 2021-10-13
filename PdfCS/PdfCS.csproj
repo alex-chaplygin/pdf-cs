@@ -48,6 +48,9 @@
     <Compile Include="Filters\ASCII85.cs" />
     <Compile Include="Filters\ASCIIHex.cs" />
     <Compile Include="Filters\BitReader.cs" />
+    <Compile Include="Filters\RunLength.cs" />
+    <Compile Include="Filters\LZW.cs" />
+    <Compile Include="Filters\Predictor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
