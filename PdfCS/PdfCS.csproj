@@ -51,6 +51,7 @@
     <Compile Include="Filters\RunLength.cs" />
     <Compile Include="Filters\LZW.cs" />
     <Compile Include="Filters\Predictor.cs" />
+    <Compile Include="Filters\JPEG\DCT.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
