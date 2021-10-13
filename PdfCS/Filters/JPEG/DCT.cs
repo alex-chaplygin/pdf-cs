@@ -110,8 +110,8 @@ namespace PdfCS
         /// <summary>
         /// Сдвиг уровня
         /// </summary>
-        /// <param name="block"></param>
-        /// <returns></returns>
+        /// <param name="block">блок отсчетов</param>
+        /// <returns>блок сдвинутых отсчетов</returns>
         static short[,] LevelShift(short[,] block)
         {
             for (int i = 0; i < 8; i++)
