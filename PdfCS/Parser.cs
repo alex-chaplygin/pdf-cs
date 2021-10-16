@@ -23,12 +23,18 @@ namespace PdfCS
         private char lastChar;
 
 	/// <summary>
+        /// Очередь токенов метода ReadToken
+        /// </summary>
+        private Queue<object> tokens;
+	    
+	/// <summary>
 	///   Конструктор класса
 	/// </summary>
         /// <param name="s">Поток, откуда будут считываться символы</param>
         public Parser(Stream s)
         {
             stream = s;
+	    tokens = new Queue<object>();
         }
 
 	/// <summary>
@@ -380,6 +386,93 @@ namespace PdfCS
                 charArray += lastChar;
             }
             return charArray.Remove(charArray.Length - 1).ToCharArray();
+        }
+
+	/// <summary>
+        /// Считывает токены из строки.
+        /// в зависимости от текущего символа lastChar вызывает соответствующий метод чтения объекта
+        /// если конец потока, то вызывает исключение "Конец потока"
+        /// если прочитано число, то оно заносится в очередь и читается следующий токен
+        /// если он также число, то вновь заносится в очередь и читается еще токен.Если последний равен ключевому слову "R",
+        /// то возвращается объект Tuple<int, int> из двух чисел
+        /// Если последний токен не R, то возвращается объект из очереди
+        /// </summary>
+        /// <returns>
+        /// </returns>
+        public object ReadToken()
+        {
+            if (tokens.Count != 0)
+                return tokens.Dequeue();
+            SkipWhitespace();
+            if (lastChar == '\uffff')
+                throw new Exception("Конец потока");
+            if (lastChar == '+' || lastChar == '-' || lastChar == '.' || Char.IsDigit(lastChar))
+            {
+                object o = ReadNumber();
+                if (o is int)
+                {
+                    object o2 = ReadToken();
+                    if (o2 is int)
+                    {
+                        object o3 = ReadToken();
+                        if (o3 is string && (string)o3 == "R")
+                            return Tuple.Create(o, o2);
+                        else
+                        {
+                            tokens.Enqueue(o);
+                            tokens.Enqueue(o2);
+                            tokens.Enqueue(o3);
+                            return tokens.Dequeue();
+			}
+                    }
+                    else
+                    {
+                        tokens.Enqueue(o);
+                        tokens.Enqueue(o2);
+                        return tokens.Dequeue();
+                    }
+                }
+                else
+                    return o;
+            }
+            else if (lastChar == '<')
+            {
+                NextChar();
+                if (lastChar == '<')
+                    return ReadHex();
+                else
+                    return ReadDictionary();
+            }
+            else if (lastChar == '>')
+            {
+                NextChar();
+                if (lastChar == '>')
+                    return ">>";
+                else
+                    throw new Exception("ReadToken встретилась скобка >");
+            }
+            else if (lastChar == '[')
+                return ReadArray();
+            else if (lastChar == ']')
+                return ']';
+            else if (lastChar == 't' || lastChar == 'f')
+                return ReadBoolean();
+            else if (lastChar == '/')
+                return ReadNameObject();
+            else if (lastChar == 'n')
+                return ReadNull();
+            else
+                return ReadKeyword();
+        }
+
+	public object ReadDictionary() 
+        {
+            return null;
+        }
+
+        public object ReadArray() 
+        {
+            return null;
         }
     }
 }
