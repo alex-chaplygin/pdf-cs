@@ -398,6 +398,7 @@ namespace PdfCS
         /// Если последний токен не R, то возвращается объект из очереди
         /// </summary>
         /// <returns>
+	/// текущий объект - данные
         /// </returns>
         public object ReadToken()
         {
