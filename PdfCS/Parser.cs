@@ -466,9 +466,41 @@ namespace PdfCS
                 return ReadKeyword();
         }
 
+	/// <summary>
+        /// Читает словарь, где присутствуют пары объектов: ключ-значение.
+        /// Ключ - объект-имя (читается с помощью ReadNameObject), ключи все различные.
+        /// Значение может быть любым объектом(читается с помощью ReadToken) в том числе словарем.
+        /// Если null, то эта запись в значение не существует (не нужно добавлять).
+        /// Словарь может иметь 0 записей.
+        /// Открывающие скобки "<<" уже прочитаны.
+	/// << /Type /Example
+	/// /Subtype /DictionaryExample
+	/// /Version 0 . 01
+	/// /IntegerItem 12
+	/// /StringItem ( a string )
+	/// /Subdictionary << /Item1 0 . 4
+	/// /Item2 true
+	/// /LastItem ( not ! )
+	/// /VeryLastItem ( OK )
+	/// >>
+	/// >>
+        /// </summary>
+        /// <returns>
+        /// словарь объектов
+        /// </returns>
 	public object ReadDictionary() 
         {
-            return null;
+	    Dictionary<string, object> dictionary = new Dictionary<string, object>();
+            while (stream.Position < stream.Length)
+            {
+                string key = ReadNameObject();
+                object value = ReadToken();
+                if (value.ToString() == ">>")
+                    return dictionary;
+                else if (value != null)
+                    dictionary.Add(key, value);
+            }
+            return dictionary;
         }
 
         public object ReadArray() 
