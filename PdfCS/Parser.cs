@@ -507,5 +507,61 @@ namespace PdfCS
         {
             return null;
         }
+
+	/// <summary>
+        /// читает объект PDF
+        /// objNum - номер объекта(положительный)
+        /// в новом созданном файле равен 0, увеличивается при обновлении файла.
+        /// Эти два номера образуют пару для уникальной идентификации объекта.
+        /// Пример объекта:
+        /// 12 0 obj
+        /// (Brillig)
+        /// endobj
+        /// Чтение происходит с помощью метода ReadToken #11
+        /// Проверяет, что объект записан именно в таком виде.
+        /// Если вместо endobj присутствует ключевое слово stream, тогда вызывается чтение потока #30
+        /// Для потока сохраняем словарь в параметре dict
+        /// </summary>
+        /// <param name="dict">выходной параметр - словарь объекта(для потоков)</param>
+        /// <returns> возвращает данные объекта </returns>
+        public object ReadIndirectObject(out Dictionary<string, object> dict)
+        {
+            object value, obj;
+
+	    dict = null;
+            value = ReadToken();
+            if (!(value is int))
+                throw new Exception("Неверный номер объекта (objNum)");
+            value = ReadToken();
+            if (!(value is int))
+                throw new Exception("Неверный номер поколения (genNum)");
+            value = ReadToken();
+            if (value is string && (string)value != "obj")
+                throw new Exception("Ожидался параметр obj");            
+            obj = ReadToken();
+            value = ReadToken();
+            if (value is string && (string)value == "stream")
+            {
+                dict = (Dictionary<string, object>)obj;
+                value = ReadStream(dict);
+                return value;
+            }
+            else if (value is string && (string)value == "endobj")
+                return obj;
+            else
+                throw new Exception("Ожидался параметр endobj");
+        }
+
+        /// <summary>
+        /// Заглушка
+        /// </summary>
+        /// <param name="dict"></param>
+        /// <returns></returns>
+        public byte[] ReadStream(Dictionary<string, object> dict)
+        {
+            byte[] vs = new byte[0];
+
+            return vs;
+        }
     }
 }
