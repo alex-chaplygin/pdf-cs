@@ -503,9 +503,28 @@ namespace PdfCS
             return dictionary;
         }
 
-        public object ReadArray() 
+	/// <summary>
+        /// читает массив из объектов, заключенных в квадратные скобки
+        ///первый символ '[' уже прочитан
+        ///Массив может содержать 0 элементов
+        ///массив может включать другие массивы, поэтому для чтения объектов использовать ReadToken
+        ///[549 3.14 false(Ralph) / SomeName]
+        /// </summary>
+	/// <returns>
+	/// массив из значений объектов
+	/// </returns>
+        public object[] ReadArray()
         {
-            return null;
+            List<object> list = new List<object>();
+            while (stream.Position < stream.Length)
+            {
+                object o = ReadToken();
+                if ((o is char) && (char)o == ']')
+                    return list.ToArray();
+                else
+                    list.Add(o);  
+            }
+            throw new Exception("ReadArray завершился без закрывающей скобки");           
         }
 
 	/// <summary>
