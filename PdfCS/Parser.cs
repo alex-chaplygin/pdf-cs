@@ -213,7 +213,7 @@ namespace PdfCS
             string str = "";
             int resi;
             double resd;
-            
+
             while (lastChar != '\uffff' && 
                 (lastChar == '+' || lastChar == '-' || lastChar == '.' || Char.IsDigit(lastChar)))
             {
@@ -406,7 +406,8 @@ namespace PdfCS
                 return tokens.Dequeue();
             SkipWhitespace();
             if (lastChar == '\uffff')
-                throw new Exception("Конец потока");
+                //throw new Exception("Конец потока");
+		return '\uffff';
             if (lastChar == '+' || lastChar == '-' || lastChar == '.' || Char.IsDigit(lastChar))
             {
                 object o = ReadNumber();
