@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace PdfCS
 {
     /// <summary>
-    ///   Класс шифрования для потоковых объектов
+    ///   Класс дешифрования документа
     /// </summary>
     public class Encryption
     {
