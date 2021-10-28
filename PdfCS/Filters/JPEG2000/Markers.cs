@@ -8,12 +8,12 @@ namespace PdfCS
         StartOfCodestream = 0xFF4F,
 
 	/// <summary>
-	///   Начало тайла
+	///   Начало части тайла
 	/// </summary>
         StartOfTilepart = 0xFF90,
 
 	/// <summary>
-	///   начало данных тайла
+	///   начало данных части тайла
 	/// </summary>
         StartOfData = 0xFF93,
 
