@@ -79,7 +79,7 @@ namespace PdfCS
 	private void Read()
 	{
 	    Marker m = ReadMarker();
-	    if (ReadMarker() != Marker.StartOfCodestream)
+	    if (m != Marker.StartOfCodestream)
 		throw new Exception("Нет StartOfCodestream");
 	    ReadMain();
 	    while (true)
