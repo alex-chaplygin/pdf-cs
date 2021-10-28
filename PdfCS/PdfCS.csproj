@@ -53,6 +53,12 @@
     <Compile Include="Filters\Predictor.cs" />
     <Compile Include="Filters\Flate.cs" />
     <Compile Include="Filters\JPEG\DCT.cs" />
+    <Compile Include="Filters\JPEG2000\JPEG2000.cs" />
+    <Compile Include="Filters\JPEG2000\CodingStyle.cs" />
+    <Compile Include="Filters\JPEG2000\ImageParams.cs" />
+    <Compile Include="Filters\JPEG2000\Markers.cs" />
+    <Compile Include="Filters\JPEG2000\Quantization.cs" />
+    <Compile Include="Filters\JPEG2000\TilePartInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
