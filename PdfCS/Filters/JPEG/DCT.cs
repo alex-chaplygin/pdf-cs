@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace PdfCS
 {
@@ -118,6 +119,17 @@ namespace PdfCS
                 for (int j = 0; j < 8; j++)
                     block[i, j] = ClampByte(block[i, j] + 128);
             return block;
+        }
+
+	/// <summary>
+        /// Декидирование потока по заданным параметрам
+        /// </summary>
+        /// <param name="stream">Поток данных</param>
+        /// <param name="param">Словарь параметров</param>
+        /// <returns>массив декодированных байт</returns>
+        public static byte[] Decode(byte[] stream, Dictionary<string, object>param = null)
+        {
+            throw new Exception("Класс JPEG не реализован");
         }
     }
 }
