@@ -17,7 +17,7 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 	    throw new Exception("Fail");
 	}
 
-	public static void IsEqual(object o, object o2)
+	public static void AreEqual(object o, object o2)
 	{
 	    if (o is int)
 	    {
@@ -29,15 +29,14 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 		if ((bool)o != (bool)o2)
 		    Fail();
 	    }
+	    else if (o is string)
+	    {
+		if ((string)o != (string)o2)
+		    Fail();
+	    }
 	    else 
 		if (o != o2)
 		    Fail();
-	}
-
-	public static void AreEqual(string o, string o2)
-	{
-	    if (o != o2)
-		Fail();
 	}
     }
 }
