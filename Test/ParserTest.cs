@@ -48,5 +48,45 @@ namespace PDFTest
 	{
 	    TestToken("  10", typeof(int), 10);
 	}
+
+	[TestMethod]
+	public void True()
+        {
+	    TestToken("true", typeof(bool), true);
+        }
+
+	[TestMethod]
+	public void False()
+        {
+	    TestToken("false", typeof(bool), false);
+	}
+
+	[TestMethod]
+	public void TrueError()
+	{
+            try
+            {
+		TestToken("tru", typeof(bool), true);
+		Assert.Fail();
+	    }
+	    catch(Exception ex)
+            {
+		Assert.AreEqual(ex.Message, "Ошибка true Boolean");
+            }
+	}
+
+	[TestMethod]
+	public void FalseError()
+	{
+	    try
+	    {
+		TestToken("fals", typeof(bool), false);
+		Assert.Fail();
+	    }
+	    catch (Exception ex)
+	    {
+		Assert.AreEqual(ex.Message, "Ошибка false Boolean");
+	    }
+	}
     }
 }
