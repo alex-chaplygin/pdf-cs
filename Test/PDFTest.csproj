@@ -17,4 +17,8 @@
     <ProjectReference Include="..\PdfCS\PdfCS.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="ParserTest.cs" />
+  </ItemGroup>
+
 </Project>
