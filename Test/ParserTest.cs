@@ -88,5 +88,84 @@ namespace PDFTest
 		Assert.AreEqual(ex.Message, "Ошибка false Boolean");
 	    }
 	}
+
+	[TestMethod]
+	public void ErrorNumObject()
+	{
+	    try
+	    {
+		ReadIndirectObjectTest("K", null);
+	    }
+	    catch (Exception e)
+	    {
+		Assert.AreEqual(e.Message, "Неверный номер объекта (objNum)");
+	    }
+	}
+
+	[TestMethod]
+	public void ErrorGenObject()
+	{
+	    try
+	    {
+		ReadIndirectObjectTest("10 ,", null);
+	    }
+	    catch (Exception e)
+	    {
+		Assert.AreEqual(e.Message, "Неверный номер поколения (genNum)");
+	    }
+	}
+
+	[TestMethod]
+	public void ErrorObject()
+	{
+	    try
+	    {
+		ReadIndirectObjectTest("10 0 o", null);
+	    }
+	    catch (Exception e)
+	    {
+		Assert.AreEqual(e.Message, "Ожидался параметр obj");
+	    }
+	}
+
+	[TestMethod]
+	public void EndobjObject()
+	{
+	    ReadIndirectObjectTest("10 0 obj \n 5 \nendobj", 5);
+	}
+
+	[TestMethod]
+	public void ErrorEndobjObject()
+	{
+	    try
+	    {
+		ReadIndirectObjectTest("10 0 obj y", null);
+	    }
+	    catch (Exception e)
+	    {
+		Assert.AreEqual(e.Message, "Ожидался параметр endobj");
+	    }
+	}
+
+	[TestMethod]
+	public void ErrorStreamObject()
+	{
+	    ReadIndirectObjectTest("10 0 obj <5 5>> stream endobj", null);
+	}
+
+	public void ReadIndirectObjectTest(string str, object obj)
+	{
+	    Dictionary<string, object> dict;
+	    MemoryStream m = new MemoryStream();
+	    byte[] b = new byte[str.Length];
+	    for (int i = 0; i < str.Length; i++)
+		b[i] = (byte)str[i];
+	    m.Write(b, 0, str.Length);
+	    m.Seek(0, SeekOrigin.Begin);
+	    Parser p = new Parser(m);
+	    p.NextChar();
+	    object o2 = p.ReadIndirectObject(out dict);
+	    Assert.AreEqual(o2, obj);
+	}
     }
 }
