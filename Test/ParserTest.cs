@@ -23,7 +23,7 @@ namespace PDFTest
 	    p.NextChar();
 	    object o2 = p.ReadToken();
 	    //Console.WriteLine($"\nТребуется = {Convert.ChangeType(o, t)} Получено = {Convert.ChangeType(o2, t)}");
-	    Assert.IsEqual(Convert.ChangeType(o2, t), Convert.ChangeType(o, t));
+	    Assert.AreEqual(Convert.ChangeType(o2, t), Convert.ChangeType(o, t));
 	}
 	
         [TestMethod]
@@ -39,7 +39,7 @@ namespace PDFTest
 		TestToken("  nul ", typeof(object), null);
 		Assert.Fail();
 	    } catch (Exception e) {
-		Assert.IsEqual(e.Message, "Ошибка в null");
+		Assert.AreEqual(e.Message, "Ошибка в null");
 	    }
 	}
 
