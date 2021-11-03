@@ -22,11 +22,22 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 	    if (o is int)
 	    {
 		if ((int)o != (int)o2)
-		    throw new Exception("Fail");
+		    Fail();
+	    }
+	    else if (o is bool)
+	    {
+		if ((bool)o != (bool)o2)
+		    Fail();
 	    }
 	    else 
 		if (o != o2)
-		    throw new Exception("Fail");
+		    Fail();
+	}
+
+	public static void AreEqual(string o, string o2)
+	{
+	    if (o != o2)
+		Fail();
 	}
     }
 }
