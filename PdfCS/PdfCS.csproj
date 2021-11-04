@@ -60,6 +60,7 @@
     <Compile Include="Filters\JPEG2000\Markers.cs" />
     <Compile Include="Filters\JPEG2000\Quantization.cs" />
     <Compile Include="Filters\JPEG2000\TilePartInfo.cs" />
+    <Compile Include="Filters\JPEG2000\JPX.cs" />
     <Compile Include="Filters\JBIG2\GenericRegion.cs" />
     <Compile Include="Filters\JBIG2\JBIG2.cs" />
     <Compile Include="Filters\CCITTFax.cs" />
