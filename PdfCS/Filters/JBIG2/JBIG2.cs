@@ -22,7 +22,6 @@ namespace PdfCS
         public static byte[] Decode(byte[] stream, Dictionary<string, object> param= null)
         {
 	    throw new Exception("JBIG 2 не реализован");
-            return stream;
         }
     }
 }
