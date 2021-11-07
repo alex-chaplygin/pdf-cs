@@ -34,6 +34,11 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 		if ((string)o != (string)o2)
 		    Fail();
 	    }
+	    else if (o is double)
+	    {
+		if ((double)o != (double)o2)
+		    Fail();
+	    }
 	    else 
 		if (o != o2)
 		    Fail();
