@@ -163,6 +163,7 @@ class TestRunner {
         // Add initialization of any class from each one of projects 
         // containing test classes and test methods you wish to execute.
 	ParserTest par = new ParserTest();
+	BitReaderTest bit = new BitReaderTest();
 
         //--------------------------------------------------------------
  
