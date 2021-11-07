@@ -167,5 +167,99 @@ namespace PDFTest
 	    object o2 = p.ReadIndirectObject(out dict);
 	    Assert.AreEqual(o2, obj);
 	}
+
+	[TestMethod]
+	public void ReadNumberInt1()
+	{
+		TestToken("43445", typeof(int), 43445);
+	}
+
+	[TestMethod]
+	public void ReadNumberInt2()
+	{
+		TestToken("+17", typeof(int), +17);
+	}
+
+	[TestMethod]
+	public void ReadNumberInt3()
+	{
+		TestToken("-98", typeof(int), -98);
+	}
+
+	[TestMethod]
+	public void ReadNumberInt4()
+	{
+		TestToken("0", typeof(int), 0);
+	}
+
+	[TestMethod]
+	public void ReadNumberDouble1()
+	{
+		TestToken("34.5", typeof(double), 34.5);
+	}
+
+	[TestMethod]
+	public void ReadNumberDouble2()
+	{
+		TestToken("-3.62", typeof(double), -3.62);
+	}
+
+	[TestMethod]
+	public void ReadNumberDouble3()
+	{
+		TestToken("+123.6", typeof(double), +123.6);
+	}
+
+	[TestMethod]
+	public void ReadNumberDouble4()
+	{
+		TestToken("4.", typeof(double), 4.0);
+	}
+
+	[TestMethod]
+	public void ReadNumberDouble5()
+	{
+		TestToken("-.002", typeof(double), -.002);
+	}
+
+	[TestMethod]
+	public void ReadNumberDouble6()
+	{
+		TestToken("0.0", typeof(double), 0.0);
+	}
+
+	[TestMethod]
+	public void ReadNumberDouble7()
+	{
+		TestToken(".023", typeof(double), .023);
+	}
+
+	[TestMethod]
+	public void ReadNumberIntError()
+	{
+		try
+		{
+			TestToken("++01", typeof(int), 01);
+			Assert.Fail();
+		}
+		catch (Exception ex)
+		{
+			Assert.AreEqual(ex.Message, "Ошибка в целом числе");
+		}
+	}
+
+	[TestMethod]
+	public void ReadNumberDoubleError()
+	{
+		try
+		{
+			TestToken("..2", typeof(double), .2);
+			Assert.Fail();
+		}
+		catch (Exception ex)
+		{
+			Assert.AreEqual(ex.Message, "Ошибка в вещественном числе");
+		}
+	}
     }
 }
