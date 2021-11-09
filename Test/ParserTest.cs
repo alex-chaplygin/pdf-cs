@@ -23,7 +23,10 @@ namespace PDFTest
 	    p.NextChar();
 	    object o2 = p.ReadToken();
 	    //Console.WriteLine($"\nТребуется = {Convert.ChangeType(o, t)} Получено = {Convert.ChangeType(o2, t)}");
-	    Assert.AreEqual(Convert.ChangeType(o2, t), Convert.ChangeType(o, t));
+	    if (t == typeof(byte[]))
+		CollectionAssert.AreEqual(Convert.ChangeType(o2, t), Convert.ChangeType(o, t));
+	    else
+		Assert.AreEqual(Convert.ChangeType(o2, t), Convert.ChangeType(o, t));
 	}
 	
         [TestMethod]
@@ -260,6 +263,19 @@ namespace PDFTest
 		{
 			Assert.AreEqual(ex.Message, "Ошибка в вещественном числе");
 		}
+	}
+
+	[TestMethod]
+	public void ReadHexTest1()
+	{
+	    TestToken("\n%rewrew\n<901FA3>", typeof(byte[]), new byte[] {0x90, 0x1F, 0xA3});
+	}
+
+	[TestMethod]
+	public void ReadHexTest2()
+	{
+	    byte[] bytemas = new byte[] { 0x90, 0x1f, 0xa0 };
+	    TestToken("<901FA>", typeof(byte[]), bytemas);
 	}
     }
 }
