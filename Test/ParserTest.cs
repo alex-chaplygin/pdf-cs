@@ -278,5 +278,85 @@ namespace PDFTest
 	    byte[] bytemas = new byte[] { 0x90, 0x1f, 0xa0 };
 	    TestToken("<901FA>", typeof(byte[]), bytemas);
 	}
+
+	[TestMethod]
+	public void ReadNameObjectTest1()
+    {
+		TestToken("/Name1", typeof(string), "Name1");
+    }
+	
+	[TestMethod]
+	public void ReadNameObjectTest2()
+	{
+		TestToken("/ASomewhatLongerName", typeof(string), "ASomewhatLongerName");
+	}
+
+	[TestMethod]
+	public void ReadNameObjectTest3()
+	{
+		TestToken("/A;Name_With-VariousCharacters?", typeof(string), "A;Name_With-VariousCharacters?");
+	}
+
+	[TestMethod]
+	public void ReadNameObjectTest4()
+	{
+		TestToken("/1.2", typeof(string), "1.2");
+	}
+
+	[TestMethod]
+	public void ReadNameObjectTest5()
+	{
+		TestToken("/$$", typeof(string), "$$");
+	}
+
+	[TestMethod]
+	public void ReadNameObjectTest6()
+	{
+		TestToken("/@pattern", typeof(string), "@pattern");
+	}
+
+	[TestMethod]
+	public void ReadNameObjectTest7()
+	{
+		TestToken("/.notdef", typeof(string), ".notdef");
+	}
+
+	[TestMethod]
+	public void ReadNameObjectTest8()
+	{
+		TestToken("/Lime#20Green", typeof(string), "Lime Green");
+	}
+
+	[TestMethod]
+	public void ReadNameObjectTest9()
+	{
+		TestToken("/paired#28#29parentheses", typeof(string), "paired()parentheses");
+	}
+
+	[TestMethod]
+	public void ReadNameObjectTest10()
+	{
+		TestToken("/The_Key_of_F#23_Minor", typeof(string), "The_Key_of_F#_Minor");
+	}
+
+	[TestMethod]
+	public void ReadNameObjectTest11()
+	{
+	    TestToken("/A#42", typeof(string), "AB");
+	}
+
+	[TestMethod]
+	public void ReadNameObjectNullErrorTest()
+	{
+	    try
+	    {
+		TestToken("/\x00", typeof(string), "");
+		Assert.Fail();
+	    }
+	    catch(Exception ex)
+            {
+		Assert.AreEqual(ex.Message, "В имени содержится неверный символ '0'");
+	    }
+	}
     }
 }
