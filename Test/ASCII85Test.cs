@@ -20,6 +20,7 @@ namespace PDFTest
 
         public void TestSequences(byte[] encodedSequence, byte[] decodedSequence)
         {
+            byte[] res = ASCII85.Decode(encodedSequence);
             CollectionAssert.AreEqual(ASCII85.Decode(encodedSequence), decodedSequence);
         }
 
@@ -28,6 +29,13 @@ namespace PDFTest
         {
             TestSequences(ConvertToBytes("5uU-B8N8RM<+U,mBl7Q+:i^JaATMn~>"), 
                           ConvertToBytes("ASCII85 Testing Process"));
+        }
+
+        [TestMethod]
+        public void CorrectCaseZ()
+        {
+            TestSequences(ConvertToBytes("5uU-B8N8RM<+U,mzBl7Q+:i^JaATMn~>"),
+                          ConvertToBytes("ASCII85 Test\0\0\0\0ing Process"));
         }
 
         [TestMethod]
