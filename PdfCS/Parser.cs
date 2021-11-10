@@ -266,7 +266,10 @@ namespace PdfCS
                 else if (Parser.IsWhitespace(lastChar) || Parser.IsDelimeter(lastChar))
                     break;
 		else if (lastChar == '#')
+		{
+		    res = res.Remove(res.Length - 1, 1); 
 		    res += (char)Convert.ToByte(NextChar().ToString() + NextChar().ToString(), 16);
+		}
 		else
 		    res += NextChar();
             }
