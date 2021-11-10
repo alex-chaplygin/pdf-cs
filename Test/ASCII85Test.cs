@@ -20,7 +20,6 @@ namespace PDFTest
 
         public void TestSequences(byte[] encodedSequence, byte[] decodedSequence)
         {
-            byte[] res = ASCII85.Decode(encodedSequence);
             CollectionAssert.AreEqual(ASCII85.Decode(encodedSequence), decodedSequence);
         }
 
