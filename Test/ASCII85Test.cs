@@ -18,23 +18,16 @@ namespace PDFTest
             return res.ToArray();
         }
 
-        public void TestSequences(string encodedSequence, string decodedSequence)
+        public void TestSequences(byte[] encodedSequence, byte[] decodedSequence)
         {
-            byte[] res    = ASCII85.Decode(ConvertToBytes(encodedSequence));
-            byte[] answer = ConvertToBytes(decodedSequence);
-
-            if (res.Length != answer.Length)
-                Assert.Fail();
-
-            for (int i = 0; i < res.Length; i++)
-                if (res[i] != answer[i])
-                    Assert.Fail();
+            CollectionAssert.AreEqual(ASCII85.Decode(encodedSequence), decodedSequence);
         }
 
         [TestMethod]
         public void CorrectCase()
         {
-            TestSequences("5uU-B8N8RM<+U,mBl7Q+:i^JaATMn~>", "ASCII85 Testing Process");
+            TestSequences(ConvertToBytes("5uU-B8N8RM<+U,mBl7Q+:i^JaATMn~>"), 
+                          ConvertToBytes("ASCII85 Testing Process"));
         }
 
         [TestMethod]
@@ -42,7 +35,8 @@ namespace PDFTest
         {
             try
             {
-                TestSequences("5uU-Bzzz8N8RM<+U,mBl7Q+:i^JazzATMn~>", "ASCII85 Testing Process");
+                TestSequences(ConvertToBytes("5uU-Bzzz8N8RM<+U,mBl7Q+:i^JazzATMn~>"), 
+                              ConvertToBytes("ASCII85 Testing Process"));
                 Assert.Fail();
             }
             catch (Exception) { }
@@ -53,7 +47,8 @@ namespace PDFTest
         {
             try
             {
-                TestSequences("5uU-B8N8RM<+U,mBl7Q+:i^JaATMn~d", "ASCII85 Testing Process");
+                TestSequences(ConvertToBytes("5uU-B8N8RM<+U,mBl7Q+:i^JaATMn~d"), 
+                              ConvertToBytes("ASCII85 Testing Process"));
                 Assert.Fail();
             }
             catch (Exception ex)
@@ -67,7 +62,8 @@ namespace PDFTest
         {
             try
             {
-                TestSequences("5uU-B8N8RM<+U,mBl7Q+:i^JaATMn", "ASCII85 Testing Process");
+                TestSequences(ConvertToBytes("5uU-B8N8RM<+U,mBl7Q+:i^JaATMn"), 
+                              ConvertToBytes("ASCII85 Testing Process"));
                 Assert.Fail();
             }
             catch (Exception ex)
@@ -81,7 +77,8 @@ namespace PDFTest
         {
             try
             {
-                TestSequences("5uwU-B8N8wRM<+U,ml7Q+:i^JaATMn~>", "ASCII85 Testing Process");
+                TestSequences(ConvertToBytes("5uwU-B8N8wRM<+U,ml7Q+:i^JaATMn~>"), 
+                              ConvertToBytes("ASCII85 Testing Process"));
                 Assert.Fail();
             }
             catch (Exception ex)
