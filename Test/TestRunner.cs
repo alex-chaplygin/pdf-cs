@@ -164,6 +164,7 @@ class TestRunner {
         // containing test classes and test methods you wish to execute.
 	ParserTest par = new ParserTest();
 	BitReaderTest bit = new BitReaderTest();
+	ASCII85Test a = new ASCII85Test();
 
         //--------------------------------------------------------------
  
