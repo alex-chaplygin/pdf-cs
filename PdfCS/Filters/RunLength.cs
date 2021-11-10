@@ -54,7 +54,7 @@ namespace PdfCS
 		    int len = 257 - array[pos++];
 		    for (int i = 0; i < len; i++)
 			list.Add(array[pos]);
-		    pos += len;
+		    ++pos;
 		}
 	    }
 	    throw new Exception("RunLength - нет конца данных");
