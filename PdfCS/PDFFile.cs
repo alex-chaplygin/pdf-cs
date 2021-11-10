@@ -64,6 +64,11 @@ namespace PdfCS
         /// </summary>
         private static Parser parser;
 
+	/// <summary>
+        ///   Строка версии
+        /// </summary>
+        static string version;
+
         /// <summary>
         /// Метод чтения объекта кэша -
         /// если объект есть в кеше, то берем объект из кеша, если нет, то используем смещение из таблицы ссылок, 
@@ -93,5 +98,14 @@ namespace PdfCS
 	{
 	    return null;
 	}
+
+	/// <summary>
+        ///  Метод для чтения заголовка
+        /// </summary>
+        static void ReadHeader()
+        {
+            StreamReader reader = new StreamReader(stream);
+            version = reader.ReadLine().Substring(7);
+        }
     }
 }
