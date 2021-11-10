@@ -24,7 +24,8 @@ namespace PDFTest
 	    object o2 = p.ReadToken();
 	    //Console.WriteLine($"\nТребуется = {Convert.ChangeType(o, t)} Получено = {Convert.ChangeType(o2, t)}");
 	    if (t == typeof(byte[]))
-		CollectionAssert.AreEqual(Convert.ChangeType(o2, t), Convert.ChangeType(o, t));
+		CollectionAssert.AreEqual((System.Collections.ICollection)Convert.ChangeType(o2, t),
+					  (System.Collections.ICollection)Convert.ChangeType(o, t));
 	    else
 		Assert.AreEqual(Convert.ChangeType(o2, t), Convert.ChangeType(o, t));
 	}
