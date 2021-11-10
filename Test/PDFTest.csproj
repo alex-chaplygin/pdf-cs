@@ -21,6 +21,7 @@
   <ItemGroup>
     <Compile Include="ParserTest.cs" />
     <Compile Include="BitReaderTest.cs" />
+    <Compile Include="ASCII85Test.cs" />
   </ItemGroup>
 
 </Project>
