@@ -12,12 +12,12 @@ namespace PdfCS
     /// </summary>
     public class Encryption
     {
-	 /// <summary>
+        /// <summary>
         /// Длина пароля, которая должна составлять 32 байта
         /// </summary>
         private const int LengthPass = 32;
-	
-	/// <summary>
+
+        /// <summary>
         /// Флаги доступа к документу:
         /// – печать (если версия 3, то печать в низком качестве);
         /// </summary>
@@ -28,32 +28,32 @@ namespace PdfCS
         /// </summary>
         const int ModifyAccess = 1 << 3;
 
-	/// <summary>
+        /// <summary>
         /// – копирование текста и графики из документа; 
         /// </summary>
         const int CopyAccess = 1 << 4;
 
-	/// <summary>
+        /// <summary>
         /// – добавление аннотаций, заполнение полей форм;
         /// </summary>
         const int AddAccess = 1 << 5;
 
-	/// <summary>
+        /// <summary>
         /// – заполнение полей форм (даже если AddAccess = 0); 
         /// </summary>
         const int FillAccess = 1 << 8;
 
-	/// <summary>
+        /// <summary>
         /// – извлечение текста и графики; 
         /// </summary>
         const int ExtractAccess = 1 << 9;
 
-	/// <summary>
+        /// <summary>
         /// – добавление, поворот, удаление страниц, создание пометок и иконок; 
         /// </summary>
         const int AssembleAccess = 1 << 10;
 
-	/// <summary>
+        /// <summary>
         /// – печать в полном качестве.
         /// </summary>
         const int PrintFullAccess = 1 << 11;
@@ -64,35 +64,92 @@ namespace PdfCS
         /// </summary>
         static int R;
 
-	/// <summary>
+        /// <summary>
         /// – код алгоритма;
         /// </summary>
         static int V;
 
-	/// <summary>
+        /// <summary>
         /// – строка для генерации ключа;
         /// </summary>
-        static string O;
+        static byte[] O;
 
-	/// <summary>
+        /// <summary>
         /// – строка пароля пользователя;
         /// </summary>
-        static string U;
+        static byte[] U;
 
-	/// <summary>
+        /// <summary>
         /// – флаги доступа;
         /// </summary>
         static int P;
 
-	/// <summary>
+        /// <summary>
         /// – зашифрованы метаданные.  
         /// </summary>
         static bool encryptMetadata;
 
-	/// <summary>
+        /// <summary>
         /// Длина ключа в битах от 40 до 128, кратная 8
         /// </summary>
         private static int Length;
+
+        /// <summary>
+        /// Ключ шифрования
+        /// </summary>
+        static byte[] encryptionKey;
+
+        /// <summary>
+        /// Аутентификация владельца
+        /// </summary>
+        /// <param name="pass">пароль владельца</param>
+        /// <returns>Прошла аутентификация или нет</returns>
+        static bool OwnerAuthentificate(string pass)
+        {
+            encryptionKey = ComputeOwnerPassword(pass, null);
+            byte[] result = null;
+
+            if (R == 2)
+                result = DecodeRC4(O, encryptionKey);
+            if (R >= 3)
+            {
+                result = DecodeRC4(O, encryptionKey);
+                for (int i = 1; i < 20; i++)
+                {
+                    for (int j = 0; j < encryptionKey.Length; j++)
+                        encryptionKey[i] ^= result[i];
+                    result = DecodeRC4(result, encryptionKey);
+                }
+            }
+
+            if (UserAuthentificate(result.ToString()))
+                return true;
+            else
+                return false;
+        }
+
+        /// <summary>
+        /// заглушка
+        /// </summary>
+        /// <param name="pass"></param>
+        /// <returns></returns>
+        static bool UserAuthentificate(string pass)
+        {
+
+            return false;
+        }
+
+        /// <summary>
+        /// заглушка
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        static byte[] DecodeRC4(byte[] data, byte[] key)
+        {
+
+            return null;
+        }
 
         /// <summary>
         /// Инициализирует параметры стандартного фильтра дешифрования.
@@ -114,8 +171,8 @@ namespace PdfCS
         {
             R = (int)param["R"];
             V = (int)param["V"];
-            O = (string)param["O"];
-            U = (string)param["U"];
+            O = (byte[])param["O"];
+            U = (byte[])param["U"];
             P = (int)param["P"];
             encryptMetadata = (bool)param["encryptMetadata"];
 
@@ -128,8 +185,8 @@ namespace PdfCS
             if (U.Length != 32)
                 throw new Exception("Строка пароля пользователя имела неверный формат");
         }
-	
-	/// <summary>
+
+        /// <summary>
         /// Вычисление строки пароля владельца
         /// </summary>
         /// <param name="ownPass">пароль владельца</param>
@@ -146,25 +203,25 @@ namespace PdfCS
                 ownPass = userPass;
 
             keyOwn = MD5Hash(GetPass(ownPass));
-	    return keyOwn;
-	    /*
-            keyUser = DecodeRC4(GetPass(userPass), keyOwn);
+            return keyOwn;
+            /*
+                keyUser = DecodeRC4(GetPass(userPass), keyOwn);
 
-            if (R >= 3)
-                for (int i = 1; i < 19; i++)
-                {
-                    for (int j = 0; j < keyOwn.Length; j++)
+                if (R >= 3)
+                    for (int i = 1; i < 19; i++)
                     {
-                        keyOwn[i] ^= keyUser[i];
+                        for (int j = 0; j < keyOwn.Length; j++)
+                        {
+                            keyOwn[i] ^= keyUser[i];
+                        }
+                        keyUser = DecodeRC4(keyUser, keyOwn);
                     }
-                    keyUser = DecodeRC4(keyUser, keyOwn);
-                }
-            result = keyUser;
+                result = keyUser;
 
-            return result;*/
+                return result;*/
         }
 
-	/// <summary>
+        /// <summary>
         /// Вычисление ключа для пароля владельца
         /// </summary>
         /// <param name="array">массив байт пароля владельца</param>
@@ -189,8 +246,8 @@ namespace PdfCS
 
             return hash;
         }
-	
-	/// <summary>
+
+        /// <summary>
         /// Вычисление пароля владельца и пользователя (для метода ComputeOwnerPassword)
         /// </summary>
         /// <param name="s">пароль пользователя</param>
@@ -203,7 +260,7 @@ namespace PdfCS
                 array = Encoding.UTF8.GetBytes(s.Substring(0, 32));
             else
                 array = PadString(s, s.Length);
-	    
+
             return array;
         }
 
@@ -224,8 +281,8 @@ namespace PdfCS
 
             return Encoding.UTF8.GetBytes(s);
         }
-	
-	/// <summary>
+
+        /// <summary>
         ///   Применяет фильтр для дешифрования потока
         /// </summary>
         /// <param name="stream">Зашифрованный поток</param>
