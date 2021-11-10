@@ -125,7 +125,7 @@ namespace PdfCS
             result = DecodeRC4(O, encryptionKey);
             
             if (R >= 3)
-                for (int i = 19; i > 0; i--)
+                for (int i = 19; i >= 0; i--)
                 {
                     for (int j = 0; j < encryptionKey.Length; j++)
                         encryptionKey[j] ^= (byte)i;
@@ -214,31 +214,9 @@ namespace PdfCS
         /// <returns>возвращает строку байт для значения O</returns>
         public static byte[] ComputeOwnerPassword(string ownPass, string userPass)
         {
-            byte[] keyOwn;
-            byte[] keyUser;
-
-            byte[] result;
-
             if (ownPass == "")
                 ownPass = userPass;
-
-            keyOwn = MD5Hash(GetPass(ownPass));
-            return keyOwn;
-            /*
-                keyUser = DecodeRC4(GetPass(userPass), keyOwn);
-
-                if (R >= 3)
-                    for (int i = 1; i < 19; i++)
-                    {
-                        for (int j = 0; j < keyOwn.Length; j++)
-                        {
-                            keyOwn[i] ^= keyUser[i];
-                        }
-                        keyUser = DecodeRC4(keyUser, keyOwn);
-                    }
-                result = keyUser;
-
-                return result;*/
+            return MD5Hash(GetPass(ownPass));
         }
 
         /// <summary>
