@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -11,6 +12,11 @@ namespace PdfCS
     /// </summary>
     public class Encryption
     {
+	 /// <summary>
+        /// Длина пароля, которая должна составлять 32 байта
+        /// </summary>
+        private const int LengthPass = 32;
+	
 	/// <summary>
         /// Флаги доступа к документу:
         /// – печать (если версия 3, то печать в низком качестве);
@@ -83,6 +89,11 @@ namespace PdfCS
         /// </summary>
         static bool encryptMetadata;
 
+	/// <summary>
+        /// Длина ключа в битах от 40 до 128, кратная 8
+        /// </summary>
+        private static int Length;
+
         /// <summary>
         /// Инициализирует параметры стандартного фильтра дешифрования.
         /// Возможные значения:
@@ -118,7 +129,103 @@ namespace PdfCS
                 throw new Exception("Строка пароля пользователя имела неверный формат");
         }
 	
+	/// <summary>
+        /// Вычисление строки пароля владельца
+        /// </summary>
+        /// <param name="ownPass">пароль владельца</param>
+        /// <param name="userPass">пароль пользователя</param>
+        /// <returns>возвращает строку байт для значения O</returns>
+        public static byte[] ComputeOwnerPassword(string ownPass, string userPass)
+        {
+            byte[] keyOwn;
+            byte[] keyUser;
+
+            byte[] result;
+
+            if (ownPass == "")
+                ownPass = userPass;
+
+            keyOwn = MD5Hash(GetPass(ownPass));
+	    return keyOwn;
+	    /*
+            keyUser = DecodeRC4(GetPass(userPass), keyOwn);
+
+            if (R >= 3)
+                for (int i = 1; i < 19; i++)
+                {
+                    for (int j = 0; j < keyOwn.Length; j++)
+                    {
+                        keyOwn[i] ^= keyUser[i];
+                    }
+                    keyUser = DecodeRC4(keyUser, keyOwn);
+                }
+            result = keyUser;
+
+            return result;*/
+        }
+
+	/// <summary>
+        /// Вычисление ключа для пароля владельца
+        /// </summary>
+        /// <param name="array">массив байт пароля владельца</param>
+        /// <returns>ключ в виде массива байт</returns>
+        private static byte[] MD5Hash(byte[] array)
+        {
+            var md5 = MD5.Create();
+            int n = 5;
+            byte[] hash;
+
+            hash = md5.ComputeHash(array);
+
+            if (R >= 3)
+            {
+                for (int i = 0; i < 50; i++)
+                    hash = md5.ComputeHash(hash);
+
+                Array.Resize(ref hash, Length);
+            }
+            else if (R == 2)
+                Array.Resize(ref hash, n);
+
+            return hash;
+        }
+	
+	/// <summary>
+        /// Вычисление пароля владельца и пользователя (для метода ComputeOwnerPassword)
+        /// </summary>
+        /// <param name="s">пароль пользователя</param>
+        /// <returns>пароль</returns>
+        private static byte[] GetPass(string s)
+        {
+            byte[] array;
+
+            if (s.Length / 8 > 32)
+                array = Encoding.UTF8.GetBytes(s.Substring(0, 32));
+            else
+                array = PadString(s, s.Length);
+	    
+            return array;
+        }
+
         /// <summary>
+        /// Дополнение строки пароля (для метода GetKey)
+        /// </summary>
+        /// <param name="s">пароль владельца || пароль пользователя</param>
+        /// <returns>возвращает дополненную строку</returns>
+        private static byte[] PadString(string s, int n)
+        {
+            int m = LengthPass - n - 1;
+            byte[] extensionArray = { 0x28, 0xBF, 0x4E, 0x5E, 0x4E, 0x75, 0x8A, 0x41,
+                                      0x64, 0x00, 0x4E, 0x56, 0xFF, 0xFA, 0x01, 0x08,
+                                      0x2E, 0x2E, 0x00, 0xB6, 0xD0, 0x68, 0x3E, 0x80,
+                                      0x2F, 0x0C, 0xA9, 0xFE, 0x64, 0x53, 0x69, 0x7A};
+
+            s += extensionArray[m];
+
+            return Encoding.UTF8.GetBytes(s);
+        }
+	
+	/// <summary>
         ///   Применяет фильтр для дешифрования потока
         /// </summary>
         /// <param name="stream">Зашифрованный поток</param>
