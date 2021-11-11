@@ -292,7 +292,7 @@ namespace PdfCS
 	public byte[] ReadHex()
 	{
 	    List<byte> bytes = new List<byte>();
-	    string s = "";
+	    string s = lastChar.ToString();
 
 	    while (lastChar != '\uffff')
 	    {
@@ -443,7 +443,7 @@ namespace PdfCS
             else if (lastChar == '<')
             {
                 NextChar();
-                if (lastChar == '<')
+                if (lastChar != '<')
                     return ReadHex();
                 else
                     return ReadDictionary();
