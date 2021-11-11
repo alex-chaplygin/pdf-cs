@@ -280,6 +280,35 @@ namespace PdfCS
             return Encoding.UTF8.GetBytes(s);
         }
 
+	public static byte[] ComputeDecryptionKey(string pass){
+            return null;
+        }
+
+	/// <summary>
+        /// Вычисляет строку для пароля пользователя
+        /// (для сравнения с U), версия шифрования 2.
+        /// Алгоритм:
+        /// 1. Вычислить ключ шифрования (Вычисление ключа шифрования #42) и сохранить его;
+        /// 2. С помощью алгоритма RC4 (Дешифровка RC4 #38) зашифровать строку полученную
+        /// после функции PadString к строке пароля, в качестве ключа берется результат шага 1;
+        /// 3. Вернуть результат шага 2.
+        /// </summary>
+        /// <param name="pass">Строка пароля пользователя</param>
+        /// <returns>
+        /// Строка для пароля пользователя
+        /// </returns>
+        public static byte[] ComputeUserPasswordV2(string pass){
+            byte[] key = ComputeDecryptionKey(pass);
+            byte[] result;
+
+            if(pass.Length < 32)
+                result = PadString(pass, 32 - pass.Length);
+            else
+                result = Encoding.UTF8.GetBytes(pass.Substring(0, 32));
+            encryptionKey = result;
+            return DecodeRC4(result, key);
+        }
+
         /// <summary>
         ///   Применяет фильтр для дешифрования потока
         /// </summary>
