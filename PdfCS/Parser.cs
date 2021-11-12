@@ -113,6 +113,7 @@ namespace PdfCS
                 f += NextChar();
             if (f != "ull")
                 throw new  Exception("Ошибка в null");
+	    NextChar();
             return null;
         }
 
@@ -137,6 +138,7 @@ namespace PdfCS
                         NextChar();
                     else
                         throw new Exception("Ошибка true Boolean");
+		NextChar();
                 return true;
             }
             else if (lastChar == 'f')
@@ -147,6 +149,7 @@ namespace PdfCS
 			NextChar();
                     else
                         throw new Exception("Ошибка false Boolean");
+		NextChar();
                 return false;
             }
             else
@@ -184,6 +187,7 @@ namespace PdfCS
 	    while (lastChar != '\uffff' && !Parser.IsWhitespace(lastChar) &&
 		   !Parser.IsDelimeter(lastChar))
 		res += NextChar();
+	    NextChar();
 	    return res.Substring(0, res.Length - 1);
 	}
 
@@ -273,7 +277,7 @@ namespace PdfCS
 		else
 		    res += NextChar();
             }
-            return res.Substring(0, res.Length - 1); ;
+            return res.Substring(0, res.Length - 1); 
         }
 
 	/// <summary>
@@ -313,6 +317,7 @@ namespace PdfCS
 		throw new Exception("Нет скобки в ReadHex");
 	    if (s != "")
 		bytes.Add(Convert.ToByte(s + "0", 16));
+	    NextChar();
 	    return bytes.ToArray();
 	}
 
@@ -388,6 +393,7 @@ namespace PdfCS
                 }
                 charArray += lastChar;
             }
+	    NextChar();
             return charArray.Remove(charArray.Length - 1).ToCharArray();
         }
 
@@ -409,7 +415,6 @@ namespace PdfCS
                 return tokens.Dequeue();
             SkipWhitespace();
             if (lastChar == '\uffff')
-                //throw new Exception("Конец потока");
 		return '\uffff';
             if (lastChar == '+' || lastChar == '-' || lastChar == '.' || Char.IsDigit(lastChar))
             {
@@ -452,14 +457,20 @@ namespace PdfCS
             {
                 NextChar();
                 if (lastChar == '>')
+		{
+		    NextChar();
                     return ">>";
+		}
                 else
                     throw new Exception("ReadToken встретилась скобка >");
             }
             else if (lastChar == '[')
                 return ReadArray();
             else if (lastChar == ']')
+	    {
+		NextChar();
                 return ']';
+	    }
             else if (lastChar == 't' || lastChar == 'f')
                 return ReadBoolean();
             else if (lastChar == '/')
@@ -495,6 +506,7 @@ namespace PdfCS
 	public object ReadDictionary() 
         {
 	    Dictionary<string, object> dictionary = new Dictionary<string, object>();
+	    NextChar();
             while (stream.Position < stream.Length)
             {
                 string key = ReadNameObject();
@@ -520,9 +532,12 @@ namespace PdfCS
         public object[] ReadArray()
         {
             List<object> list = new List<object>();
-            while (stream.Position < stream.Length)
+	    NextChar();
+            while (true)
             {
                 object o = ReadToken();
+		if (o is char && (char)o == '\uffff')
+		    break;
                 if ((o is char) && (char)o == ']')
                     return list.ToArray();
                 else
