@@ -64,6 +64,16 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 		    if (oa[i] != oa2[i])
 			Fail("i = " + i + " a1 = " + oa[i] + " a2 = " + oa2[i]);
 	    }
+	    else if (o is char[])
+	    {
+		char[] oa = (char[])o;
+		char[] oa2 = (char[])o2;
+		if (oa.Length != oa2.Length)
+		    Fail("length");
+		for (int i = 0; i < oa.Length; i++)
+		    if (oa[i] != oa2[i])
+			Fail("i = " + i + " a1 = " + oa[i] + " a2 = " + oa2[i]);
+	    }
 	}
     }
 }

@@ -9,10 +9,8 @@ namespace PDFTest
     [TestClass]
     public class ParserTest
     {
-	public void TestToken(string s, Type t, object o)
+	private object ReadToken(string s)
 	{
-	    if (o != null && o.GetType() != t)
-		Assert.Fail();
 	    MemoryStream m = new MemoryStream();
 	    byte[] b = new byte[s.Length];
 	    for (int i = 0; i < s.Length; i++)
@@ -21,7 +19,14 @@ namespace PDFTest
 	    m.Seek(0, SeekOrigin.Begin);
 	    Parser p = new Parser(m);
 	    p.NextChar();
-	    object o2 = p.ReadToken();
+	    return p.ReadToken();
+	}
+	
+	public void TestToken(string s, Type t, object o)
+	{
+	    if (o != null && o.GetType() != t)
+		Assert.Fail();
+	    object o2 = ReadToken(s);
 	    //Console.WriteLine($"\nТребуется = {Convert.ChangeType(o, t)} Получено = {Convert.ChangeType(o2, t)}");
 	    if (t == typeof(byte[]))
 		CollectionAssert.AreEqual((System.Collections.ICollection)Convert.ChangeType(o2, t),
@@ -357,6 +362,17 @@ namespace PDFTest
             {
 		Assert.AreEqual(ex.Message, "В имени содержится неверный символ '0'");
 	    }
+	}
+
+	[TestMethod]
+	public void ReadArrayTest()
+	{
+	    object[] m = (object[])ReadToken("[549 3.14 false(Ralph) /SomeName]");
+	    Assert.AreEqual((int)m[0], 549);
+	    Assert.AreEqual((double)m[1], (double)3.14);
+	    Assert.AreEqual((bool)m[2], false);
+	    CollectionAssert.AreEqual((char[])m[3], new char[] {'R', 'a', 'l', 'p', 'h'});
+	    Assert.AreEqual((string)m[4], "SomeName");
 	}
     }
 }
