@@ -367,12 +367,28 @@ namespace PDFTest
 	[TestMethod]
 	public void ReadArrayTest()
 	{
-	    object[] m = (object[])ReadToken("[549 3.14 false(Ralph) /SomeName]");
+	    object[] m = (object[])ReadToken("[549 3.14 false(Ralph) /SomeName [1]]");
 	    Assert.AreEqual((int)m[0], 549);
 	    Assert.AreEqual((double)m[1], (double)3.14);
 	    Assert.AreEqual((bool)m[2], false);
 	    CollectionAssert.AreEqual((char[])m[3], new char[] {'R', 'a', 'l', 'p', 'h'});
 	    Assert.AreEqual((string)m[4], "SomeName");
+	    Assert.AreEqual((int)((object[])m[5])[0], 1);
 	}
+
+	[TestMethod]
+	public void ReadArrayErrorTest()
+	{
+	    try
+	    {
+		object[] m = (object[])ReadToken("[549");
+		Assert.AreEqual((int)m[0], 549);
+		Assert.Fail();
+	    }
+	    catch(Exception ex)
+            {
+		Assert.AreEqual(ex.Message, "ReadArray завершился без закрывающей скобки");
+	    }
+	}	
     }
 }
