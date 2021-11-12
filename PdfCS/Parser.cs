@@ -138,7 +138,6 @@ namespace PdfCS
                         NextChar();
                     else
                         throw new Exception("Ошибка true Boolean");
-		NextChar();
                 return true;
             }
             else if (lastChar == 'f')
@@ -149,7 +148,6 @@ namespace PdfCS
 			NextChar();
                     else
                         throw new Exception("Ошибка false Boolean");
-		NextChar();
                 return false;
             }
             else
@@ -464,6 +462,8 @@ namespace PdfCS
                 else
                     throw new Exception("ReadToken встретилась скобка >");
             }
+            else if (lastChar == '(')
+                return ReadString();
             else if (lastChar == '[')
                 return ReadArray();
             else if (lastChar == ']')
