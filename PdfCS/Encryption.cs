@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -321,6 +322,56 @@ namespace PdfCS
         public static byte[] ApplyFilter(byte[] stream, string name, Dictionary<string, object> param)
         {
             return stream;
+        }
+
+        /// <summary>
+        /// Декодирование DES
+        /// </summary>
+        /// <param name="data">зашифрованные данные</param>
+        /// <param name="key">ключ шифрования</param>
+        /// <returns>возвращает дешифрованные данные</returns>
+        public static byte[] DecodeDES(byte[] data, byte[] key)
+        {
+            using (DESCryptoServiceProvider desCrypt = new DESCryptoServiceProvider { Key = key })
+            {
+                using (ICryptoTransform cryptTrans = desCrypt.CreateDecryptor())
+                {
+                    using (var memoryStr = new MemoryStream())
+                    {
+                        using (var cpyptStr = new CryptoStream(memoryStr, cryptTrans, CryptoStreamMode.Write))
+                        {
+                            cpyptStr.Write(data, 0, data.Length);
+                            cpyptStr.FlushFinalBlock();
+                        }
+                        return memoryStr.ToArray();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Декодирование RC2
+        /// </summary>
+        /// <param name="data">зашифрованные данные</param>
+        /// <param name="key">ключ шифрования</param>
+        /// <returns>возвращает дешифрованные данные</returns>
+        public static byte[] DecodeRC2(byte[] data, byte[] key)
+        {
+            using (RC2CryptoServiceProvider rc2Crypt = new RC2CryptoServiceProvider { Key = key })
+            {
+                using (ICryptoTransform cryptTrans = rc2Crypt.CreateDecryptor())
+                {
+                    using (var memoryStr = new MemoryStream())
+                    {
+                        using (var cpyptStr = new CryptoStream(memoryStr, cryptTrans, CryptoStreamMode.Write))
+                        {
+                            cpyptStr.Write(data, 0, data.Length);
+                            cpyptStr.FlushFinalBlock();
+                        }
+                        return memoryStr.ToArray();
+                    }
+                }
+            }
         }
     }
 }
