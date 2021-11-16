@@ -140,7 +140,8 @@ namespace PdfCS
         {
             List<byte> res = new List<byte>();
             InitTable();
-	    InitParams(params_);
+	    if (params_ != null)
+				InitParams(params_);
             BitReader bR = new BitReader(stream);
             int code;
 	    try
