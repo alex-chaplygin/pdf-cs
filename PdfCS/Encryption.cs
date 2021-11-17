@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -123,7 +124,7 @@ namespace PdfCS
             byte[] result = null;
 
             result = DecodeRC4(O, encryptionKey);
-            
+
             if (R >= 3)
                 for (int i = 19; i >= 0; i--)
                 {
@@ -300,11 +301,12 @@ namespace PdfCS
             return Encoding.UTF8.GetBytes(s);
         }
 
-	public static byte[] ComputeDecryptionKey(string pass){
+        public static byte[] ComputeDecryptionKey(string pass)
+        {
             return null;
         }
 
-	/// <summary>
+        /// <summary>
         /// Вычисляет строку для пароля пользователя
         /// (для сравнения с U), версия шифрования 2.
         /// Алгоритм:
@@ -317,11 +319,12 @@ namespace PdfCS
         /// <returns>
         /// Строка для пароля пользователя
         /// </returns>
-        public static byte[] ComputeUserPasswordV2(string pass){
+        public static byte[] ComputeUserPasswordV2(string pass)
+        {
             byte[] key = ComputeDecryptionKey(pass);
             byte[] result;
 
-            if(pass.Length < 32)
+            if (pass.Length < 32)
                 result = PadString(pass, 32 - pass.Length);
             else
                 result = Encoding.UTF8.GetBytes(pass.Substring(0, 32));
@@ -351,6 +354,47 @@ namespace PdfCS
         static byte[] ComputeUserPasswordV3(string pass)
         {
             return new byte[0];
+	}
+	
+        /// Декодирование DES
+        /// </summary>
+        /// <param name="data">зашифрованные данные</param>
+        /// <param name="key">ключ шифрования</param>
+        /// <returns>возвращает дешифрованные данные</returns>
+        public static byte[] DecodeDES(byte[] data, byte[] key)
+        {
+            using (DESCryptoServiceProvider desCrypt = new DESCryptoServiceProvider { Key = key })
+            using (ICryptoTransform cryptTrans = desCrypt.CreateDecryptor())
+            using (var memoryStr = new MemoryStream())
+            {
+                using (var cpyptStr = new CryptoStream(memoryStr, cryptTrans, CryptoStreamMode.Write))
+                {
+                    cpyptStr.Write(data, 0, data.Length);
+                    cpyptStr.FlushFinalBlock();
+                }
+                return memoryStr.ToArray();
+            }
+        }
+
+        /// <summary>
+        /// Декодирование RC2
+        /// </summary>
+        /// <param name="data">зашифрованные данные</param>
+        /// <param name="key">ключ шифрования</param>
+        /// <returns>возвращает дешифрованные данные</returns>
+        public static byte[] DecodeRC2(byte[] data, byte[] key)
+        {
+            using (RC2CryptoServiceProvider rc2Crypt = new RC2CryptoServiceProvider { Key = key })
+            using (ICryptoTransform cryptTrans = rc2Crypt.CreateDecryptor())
+            using (var memoryStr = new MemoryStream())
+            {
+                using (var cpyptStr = new CryptoStream(memoryStr, cryptTrans, CryptoStreamMode.Write))
+                {
+                    cpyptStr.Write(data, 0, data.Length);
+                    cpyptStr.FlushFinalBlock();
+                }
+                return memoryStr.ToArray();
+            }
         }
     }
 }
