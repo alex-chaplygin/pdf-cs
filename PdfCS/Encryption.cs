@@ -136,13 +136,33 @@ namespace PdfCS
         }
 
         /// <summary>
-        /// заглушка
+        /// В зависимости от версии шифрования вызывает
+        /// Вычисление строки пароля пользователя #44 (2 версия)
+        /// Вычисление строки пароля пользователя #45 (для версии шифрования 3 и выше)
+        /// Сравниваем полученную строку со строкой U, для версии 3 и выше сравниваем только 16 байт
+        /// Если значения равны, то аутентификация успешная
         /// </summary>
-        /// <param name="pass"></param>
-        /// <returns></returns>
+        /// <param name="pass">Пароль пользователя</param>
+        /// <returns>Успешная ли аутентификация</returns>
         static bool UserAuthentificate(string pass)
         {
-
+            byte[] temp;
+            if (R == 2)
+            {
+                temp = PadString(pass, pass.Length);
+                for (int i = 0; i < temp.Length; i++)
+                    if (temp[i] != U[i])
+                        return false;
+                return true;
+            }
+            else if (R >= 3)
+            {
+                temp = ComputeUserPasswordV3(pass);
+                for (int i = 0; i < 16; i++)
+                    if (temp[i] != U[i])
+                        return false;
+                return true;
+            }
             return false;
         }
 
@@ -321,6 +341,16 @@ namespace PdfCS
         public static byte[] ApplyFilter(byte[] stream, string name, Dictionary<string, object> param)
         {
             return stream;
+        }
+
+        /// <summary>
+        /// заглушка
+        /// </summary>
+        /// <param name="pass"></param>
+        /// <returns></returns>
+        static byte[] ComputeUserPasswordV3(string pass)
+        {
+            return new byte[0];
         }
     }
 }
