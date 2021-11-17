@@ -151,7 +151,7 @@ namespace PdfCS
             {
                 temp = PadString(pass, pass.Length);
                 for (int i = 0; i < temp.Length; i++)
-                    if (temp != U)
+                    if (temp[i] != U[i])
                         return false;
                 return true;
             }
