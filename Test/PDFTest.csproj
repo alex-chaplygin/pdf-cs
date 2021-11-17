@@ -23,6 +23,7 @@
     <Compile Include="BitReaderTest.cs" />
     <Compile Include="RunLengthTest.cs" />
     <Compile Include="ASCII85Test.cs" />
+    <Compile Include="LZWTest.cs" />
   </ItemGroup>
 
 </Project>
