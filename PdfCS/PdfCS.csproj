@@ -47,6 +47,7 @@
     <Compile Include="Parser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="PDFFile.cs" />
+    <Compile Include="Encryption.cs" />
     <Compile Include="Filters\ASCII85.cs" />
     <Compile Include="Filters\ASCIIHex.cs" />
     <Compile Include="Filters\BitReader.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="Filters\JBIG2\GenericRegion.cs" />
     <Compile Include="Filters\JBIG2\JBIG2.cs" />
     <Compile Include="Filters\CCITTFax.cs" />
+    <Compile Include="Filters\Crypt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
