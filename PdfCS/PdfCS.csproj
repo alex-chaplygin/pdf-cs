@@ -55,6 +55,7 @@
     <Compile Include="Filters\LZW.cs" />
     <Compile Include="Filters\Predictor.cs" />
     <Compile Include="Filters\Flate.cs" />
+    <Compile Include="Filters\RC4.cs" />
     <Compile Include="Filters\JPEG\DCT.cs" />
     <Compile Include="Filters\JPEG2000\JPEG2000.cs" />
     <Compile Include="Filters\JPEG2000\CodingStyle.cs" />

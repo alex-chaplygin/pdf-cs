@@ -175,8 +175,7 @@ namespace PdfCS
         /// <returns></returns>
         static byte[] DecodeRC4(byte[] data, byte[] key)
         {
-
-            return null;
+            return RC4.Decode(data, key);
         }
 
         /// <summary>
