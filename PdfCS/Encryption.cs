@@ -158,11 +158,11 @@ namespace PdfCS
             else if (R >= 3)
             {
                 temp = ComputeUserPasswordV3(pass);
-                if (temp[15] == U[15])
-                    return true;
+                for (int i = 0; i < 16; i++)
+                    if (temp[i] != U[i])
+                        return false;
+                return true;
             }
-            else
-                return false;
             return false;
         }
 
