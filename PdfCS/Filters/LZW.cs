@@ -96,13 +96,11 @@ namespace PdfCS
             if ((!early && decodeTableSize >= (1 << bitsCount))
 		|| (early && decodeTableSize >= (1 << bitsCount) - 1))
                 bitsCount++;
-
             if (bitsCount > maxBitsCount)
 	    {
                 bitsCount = minBitsCount;
 		decodeTableSize = EOD + 1;
 	    }
-
             return bR.GetBitsMS(bitsCount);
         }
 
@@ -141,7 +139,7 @@ namespace PdfCS
             List<byte> res = new List<byte>();
             InitTable();
 	    if (params_ != null)
-				InitParams(params_);
+		InitParams(params_);
             BitReader bR = new BitReader(stream);
             int code;
 	    try
