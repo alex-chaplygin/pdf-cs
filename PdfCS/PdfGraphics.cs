@@ -2,6 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
+using System.ComponentModel.Design;
+using System.Drawing.Drawing2D;
+using System.Windows.Input;
 
 namespace PdfCS
 {
@@ -58,11 +61,6 @@ namespace PdfCS
         private static Rectangle mediaBox;
 
         /// <summary>
-        /// стек операндов команд
-        /// </summary>
-        private Stack<object> operands;
-
-        /// <summary>
         /// функция оператора графики
         /// </summary>
         private delegate void Operator();
@@ -74,7 +72,13 @@ namespace PdfCS
         {
             {"BT", new Operator(BeginText)},
             {"ET", new Operator(EndText)},
+            {"cm", new Operator(SetMatrix)},
         };
+
+        /// <summary>
+        /// стек операндов команд
+        /// </summary>
+        private static Stack<object> operands;
 
         /// <summary>
         /// Инициализация графики
@@ -118,6 +122,45 @@ namespace PdfCS
         private static void EndText()
         {
             currentState.beginText = false;
+	}
+	
+        /// <summary>
+        /// Модифицирует текущую матрицу трансформаций в текущем состоянии #51
+        /// 
+        /// новая матрица #50 создается из 6 операндов a, b, c, d, e, f
+        /// они извлекаются из стека #52 (операнды в стеке операндов идут в обратном порядке!)
+        /// новая матрица трансформации: CTM = M * CTM #50
+        /// 
+        /// добавь свой метод в таблицу операторов #52, имя метода - "cm"
+        /// </summary>
+        public static void SetMatrix()
+        {
+            var f = (double)operands.Pop();
+            var e = (double)operands.Pop();
+            var d = (double)operands.Pop();
+            var c = (double)operands.Pop();
+            var b = (double)operands.Pop();
+            var a = (double)operands.Pop();
+
+            Matrix matrix = new Matrix(a, b, c, d, e, f);
+
+            currentState.CTM = matrix.Mult(currentState.CTM);
+        }
+
+        /// <summary>
+        /// сохраняем текущее состояние #51 в стеке состояний
+        /// </summary>
+        static void PushState()
+        {
+
+        }
+
+        /// <summary>
+        /// устанавливаем текущее состояние #51 , извлекая из стека состояний
+        /// </summary>
+        static void PopState()
+        {
+
         }
     }
 }
