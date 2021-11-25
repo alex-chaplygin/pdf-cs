@@ -48,6 +48,8 @@
     <Compile Include="Program.cs" />
     <Compile Include="PDFFile.cs" />
     <Compile Include="Encryption.cs" />
+    <Compile Include="Matrix.cs" />
+    <Compile Include="PdfGraphics.cs" />
     <Compile Include="Filters\ASCII85.cs" />
     <Compile Include="Filters\ASCIIHex.cs" />
     <Compile Include="Filters\BitReader.cs" />
