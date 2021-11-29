@@ -100,6 +100,8 @@ namespace PdfCS
         /// </summary>
         private static byte[] encryptionKey;
 
+        private static byte[] id0;
+	
         /// <summary>
         /// Аутентификация владельца
         /// 
@@ -151,7 +153,7 @@ namespace PdfCS
             byte[] temp;
             if (R == 2)
             {
-                temp = PadString(pass, pass.Length);
+                temp = PadString(pass);
                 for (int i = 0; i < temp.Length; i++)
                     if (temp[i] != U[i])
                         return false;
@@ -273,7 +275,7 @@ namespace PdfCS
             if (s.Length / 8 > 32)
                 array = Encoding.UTF8.GetBytes(s.Substring(0, 32));
             else
-                array = PadString(s, s.Length);
+                array = PadString(s);
             return array;
         }
 
@@ -282,22 +284,59 @@ namespace PdfCS
         /// </summary>
         /// <param name="s">пароль владельца || пароль пользователя</param>
         /// <returns>возвращает дополненную строку</returns>
-        private static byte[] PadString(string s, int n)
+        private static byte[] PadString(string s)
         {
-            int m = LengthPass - n - 1;
-            byte[] extensionArray = {
+            byte[] ext = {
 		0x28, 0xBF, 0x4E, 0x5E, 0x4E, 0x75, 0x8A, 0x41,
 		0x64, 0x00, 0x4E, 0x56, 0xFF, 0xFA, 0x01, 0x08,
 		0x2E, 0x2E, 0x00, 0xB6, 0xD0, 0x68, 0x3E, 0x80,
 		0x2F, 0x0C, 0xA9, 0xFE, 0x64, 0x53, 0x69, 0x7A
 	    };
-            s += extensionArray[m];
-            return Encoding.UTF8.GetBytes(s);
+	    byte[] o = new byte[32];
+	    for (int i = 0; i < 32; i++)
+		if (i >= s.Length)
+		    o[i] = ext[i - s.Length];
+		else
+		    o[i] = (byte)s[i];
+            return o;
         }
 
+	/// <summary>
+	///   вычисляет ключ шифрования
+	///
+	///  Алгоритм:
+	///
+	/// Если длина строки больше 32 символов, обрезает строку до 32 символов
+	/// если меньше, то строка дополняется до 32 символов, символами из следующей строки (строка дополнения):
+	/// < 28 BF 4E 5E 4E 75 8A 41 64 00 4E 56 FF FA 01 08
+	/// 2E 2E 00 B6 D0 68 3E 80 2F 0C A9 FE 64 53 69 7A >
+	/// например, если длина n, то дополняется 32 - n символами
+	/// Если пароль пустой, то берется вся строка дополнения
+	/// Собирается строка для MD5 хеш-функции (смотри класс MD5), начинается со строки пароля
+	/// Добавляется строка O
+	/// Флаги P преобразуются в массив из 4х байт (младший впереди) и добавляется к строке MD5
+	/// Добавляется первая строка из id
+	/// Если версия шифрования 4 или больше и метаданные не зашифрованы, то 0xffffffff добавляется к строке MD5
+	/// Вычисляется хеш
+	/// Если версия шифрования 3 или больше, то 50 раз повторяется:
+	/// у предыдущего результата хеша берется n байт (n - число байт в ключе, вычисляется из Length) и от этого значения еще раз вычисляется MD5
+	/// У полученной строки байт берется n байт как ключ шифрования,
+	/// где n = 5 для версии шифрования 2, а для версий 3 и более вычисляется из Length как число байт в ключе
+	/// </summary>
+        /// <param name="pass"> строка пароля</param>
+        /// <returns>ключ шифрования</returns>
         public static byte[] ComputeDecryptionKey(string pass)
         {
-            return null;
+	    byte[] key = PadString(pass);
+            key = key.Concat(O).ToArray();
+            key = key.Concat(BitConverter.GetBytes(P)).ToArray();
+            key = key.Concat(id0).ToArray();
+            byte[] ff = new byte[] { 255, 255, 255, 255 };
+            if ((R == 4) || (encryptMetadata == false))
+                key = key.Concat(ff).ToArray();
+            key = MD5Hash(key);
+	    encryptionKey = key;
+            return key;
         }
 
         /// <summary>
@@ -319,7 +358,7 @@ namespace PdfCS
             byte[] result;
 
             if (pass.Length < 32)
-                result = PadString(pass, 32 - pass.Length);
+                result = PadString(pass);
             else
                 result = Encoding.UTF8.GetBytes(pass.Substring(0, 32));
             encryptionKey = result;
