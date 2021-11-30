@@ -55,12 +55,10 @@ namespace PDFTest
             double x = -3;
             double y = 10;
 
-            new Matrix(2, 3, 3, 1, 6, 5) .MultVector(x, y, out x, out y);
-            Matrix.Translate(3, 2)       .MultVector(x, y, out x, out y);
-            Matrix.Scale(4, 6)           .MultVector(x, y, out x, out y);
-            new Matrix()                 .MultVector(x, y, out x, out y);
+            Matrix.Translate(3, 2).MultMatrix(Matrix.Scale(4, 6))
+                                  .MultVector(x, y, out x, out y);
 
-            CollectionAssert.AreEqual(new List<double> { 132, 48 }, new List<double> { x, y });
+            CollectionAssert.AreEqual(new List<double> { 0, 72 }, new List<double> { x, y });
         }
     }
 }
