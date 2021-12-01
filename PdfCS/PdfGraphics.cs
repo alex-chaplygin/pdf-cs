@@ -42,6 +42,11 @@ namespace PdfCS
             /// Текущий размер шрифта
             /// </summary>
             public int currentFontSize;
+
+            /// <summary>
+            /// Расстояние между строк
+            /// </summary>
+            public double leading;
         }
 
         /// <summary>
@@ -193,6 +198,22 @@ namespace PdfCS
         /// <param name="content">поток содержимого страницы (команды графики)</param>
         /// <param name="resources">словарь ресурсов страницы</param>
         static void Render(byte[] content, Dictionary<string, object> resources)
+        {
+        }
+
+        /// <summary>
+        /// Перемещает позицию вывода текста на следующую строку.
+        /// В структуре состояния параметр называется double leading.
+        /// Вызвать команду 0, -leading, Td #56
+        /// </summary>
+        private static void NextLine()
+        {
+            operands.Push(0);
+            operands.Push(-currentState.leading);
+            TextMove();
+        }
+
+        private static void TextMove()
         {
         }
     }
