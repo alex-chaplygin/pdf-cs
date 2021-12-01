@@ -1,3 +1,7 @@
+PdfCS/obj
+.vs
+Test/obj
+PdfCS/bin
 *~
 # Prerequisites
 *.d
