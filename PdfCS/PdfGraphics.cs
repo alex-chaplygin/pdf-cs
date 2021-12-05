@@ -195,5 +195,22 @@ namespace PdfCS
         static void Render(byte[] content, Dictionary<string, object> resources)
         {
         }
+        /// <summary>
+        ///перемещает позицию текста
+
+        /// tx ty Td
+        /// операнды tx ty берутся из стека операндов #52
+        /// создается матрица перемещения Mt #50
+        /// из текущего состояния #51 #55 берется текстовая матрица MT и преобразуется
+        /// MT = Mt * MT
+        /// </summary>
+        private static void TextMove()
+        {
+            var ty = (double)operands.Pop();
+            var tx = (double)operands.Pop();
+            // Матрица перемещения
+            Matrix Mt = new Matrix(1, 0, 0, 1, tx, ty);
+            currentState.textMatrix = Mt.Mult(currentState.textMatrix);
+        }
     }
 }

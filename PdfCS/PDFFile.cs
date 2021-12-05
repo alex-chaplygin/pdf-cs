@@ -93,11 +93,25 @@ namespace PdfCS
             objectCache.Add(num, obj);
             return obj;
         }
-
-	public static object ReadObjectFromStream(int streamNum, int index)
+        /// <summary>
+        /// Читает сжатый объект из потока, содержащего объекты
+        /// </summary>
+        /// <param name="streamNum"> номер объекта, содержащего поток объектов </param>
+        /// <param name="index"> индекc объекта в потоке </param>
+        /// <returns> возвращает прочитанный объект </returns>
+        public static object ReadObjectFromStream(int streamNum, int index)
 	{
-	    return null;
-	}
+            Stream rstream = (Stream)GetObject(streamNum, out Dictionary<string, object> dict);
+            if (dict.ContainsKey("Type") && (string)dict["Type"] != "ObjStm")
+                throw new System.Exception("Поле Type не является ObjStm");
+            rstream.Seek((int)dict["First"], SeekOrigin.Begin);
+            parser = new Parser((MemoryStream)rstream);
+            object o = parser.ReadToken();
+            objectCache.Add(index, o);
+            if (dict.ContainsKey("Extends"))
+                ReadObjectFromStream(Tuple<int, int>);
+            return o;
+        }
 
 	/// <summary>
         ///  Метод для чтения заголовка
