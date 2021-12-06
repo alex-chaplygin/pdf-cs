@@ -14,6 +14,15 @@ namespace PdfCS
         /// </summary>
         public struct XRefEntry
         {
+	    public XRefEntry(int o, int g, bool f)
+            {
+                offset = o;
+                generation = g;
+                free = f;
+                compressed = false;
+                streamNum = 0;
+                streamIndex = 0;
+            }
             /// <summary>
             /// смещение в файле
             /// </summary>
@@ -48,7 +57,7 @@ namespace PdfCS
         /// <summary>
         ///   Поток файла
         /// </summary>
-        private static Stream stream;
+        public static Stream stream;
 
         /// <summary>
         /// Кэш объектов - ключ - номер, значение - объект
@@ -58,7 +67,7 @@ namespace PdfCS
         /// <summary>
         /// Таблица ссылок
         /// </summary>
-        private static XRefEntry[] xrefTable;
+        public static XRefEntry[] xrefTable;
 
         /// <summary>
         /// Объект класса Parser - синтаксического разбора объектов PDF
@@ -181,9 +190,104 @@ namespace PdfCS
             }
         }
 
-        private static void ReadCrossReferenceTable()
+	private static void LoadXRefStream() //метод #36
         {
+        
+        }
 
+	/// <summary>
+        /// Метод чтения таблицы ссылок
+        /// читает таблицу ссылок, позиция в файле уже установлена в ее начало, массив таблицы нужно создать
+        /// используется объект Parser для чтения данных #11
+        /// запоминаем позицию потока и читаем лексему.
+        /// если это число, то возвращаем позицию потока назад и вызываем чтение потока ссылок #36
+        /// таблица ссылок содержит по одной записи для каждого косвенного объекта #25
+        /// часть или все из этих записей могут содержаться в потоках ссылок #31
+        /// таблица состоит из одной или более секций.
+        /// таблица начинается с ключевого слова xref, после чего идут секции
+        /// каждая секция состоит из последовательного диапазона объектов
+        /// секция начинается с двух чисел: номер первого объекта в секции и количество объектов в секции.
+        /// Например: 28 5
+        /// значит в секции будут объекты: от 28 до 32
+        /// объекты в секциях не пересекаются
+        /// далее идут записи, каждая на новой строке:
+        /// число1 число2 (n или f)(символ)
+        /// число1 - смещение объекта в файле
+        /// число2 - номер поколения
+        /// n - значит запись используется,
+        /// f - запись свободная(ее запоминать в таблицу не нужно)
+        /// если в таблице ссылок запись не пустая(смещение не равно 0), то пропускаем этот объект!
+        /// (в файле могут быть несколько таблиц ссылок, сначала читаются новые таблицы)
+        /// после таблицы ссылок должен идти trailer, читаем его #33
+        /// общий пример таблицы(содержит 4 занятых и два свободных объекта):
+        /// xref
+        /// 0 6
+        /// 0000000003 65535 f
+        /// 0000000017 00000 n
+        /// 0000000081 00000 n
+        /// 0000000000 00007 f
+        /// 0000000331 00000 n
+        /// 0000000409 00000 n
+        /// пример из нескольких секций
+        /// xref
+        /// 0 1
+        /// 0000000000 65535 f
+        /// 3 1
+        /// 0000025325 00000 n
+        /// 23 2
+        /// 0000025518 00002 n
+        /// 0000025635 00000 n
+        /// 30 1
+        /// 0000025777 00000 n
+        /// </summary>
+        public static void ReadCrossReferenceTable()
+        {
+            long position;
+            position = stream.Position; //запоминаем позицию потока
+            object o = parser.ReadToken();
+//            Console.WriteLine(o.ToString());
+            if (o is int) 
+            {
+                stream.Seek(position, SeekOrigin.Begin); //возвращаем позицию потока назад
+                LoadXRefStream(); //вызываем чтение потока ссылок #36
+                return;
+            }
+            while (true)
+            {
+                o = parser.ReadToken();
+                if (o is char && (char)o == '\uffff')
+                    break;
+    //            Console.WriteLine(o.ToString());
+                if (o is string && (string)o == "trailer")
+                    break;
+                int first = (int)o; //читаем номер первого объекта
+  //              Console.WriteLine($"first = {first}");
+                int count = (int)parser.ReadToken(); //читаем количество объектов
+//                Console.WriteLine($"count = {count}");
+                if (xrefTable == null)
+                    xrefTable = new XRefEntry[first + count];
+                else
+                    Array.Resize(ref xrefTable, first + count);
+                for (int i = 0; i < count; i++)
+                {
+                    int index = first + i;
+                    int ofs = (int)parser.ReadToken(); // читаем номер смещения объекта в файле
+                  //  Console.WriteLine($"ofs = {ofs}");
+                    int gen = (int)parser.ReadToken(); // читаем номер поколения
+                //    Console.WriteLine($"gen = {gen}");
+                    string s = (string)parser.ReadToken(); //читаем n или f
+              //      Console.WriteLine($"n or f: {s}");
+                    if (s == "n" && xrefTable[index].offset == 0)
+                    {
+                        xrefTable[index].offset = ofs;
+                        xrefTable[index].generation = gen;
+                        xrefTable[index].free = false;
+                    }
+                    else if (s == "f")
+                        xrefTable[index].free = true;
+                }
+            }
+            //ReadTrailer();
         }
     }
 }
