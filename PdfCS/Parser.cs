@@ -107,13 +107,16 @@ namespace PdfCS
         /// </returns>
 	public object ReadNull()
         {
-            string f = "";
-
-            for (int i = 0; i < 3; i++)
-                f += NextChar();
-            if (f != "ull")
-                throw new  Exception("Ошибка в null");
-	    NextChar();
+	    string _null = "null";
+            string s = $"{lastChar}";
+            for (int i = 1; i < _null.Length; i++)
+            {
+                if (lastChar == _null[i - 1])
+                    NextChar();
+                else
+                    return s.Substring(0, s.Length - 1);
+                s += lastChar;
+            }
             return null;
         }
 
@@ -127,10 +130,10 @@ namespace PdfCS
         /// <returns>
         /// true или false в зависимости от прочитанного слова
         /// </returns>
-	public bool ReadBoolean()
+	public object ReadBoolean()
         {
 	    // Случай true
-            if (lastChar == 't')
+	    if (lastChar == 't')
             {
                 string _true = "true";
                 for (int i = 1; i < 5; i++)
@@ -143,15 +146,19 @@ namespace PdfCS
             else if (lastChar == 'f')
             {
                 string _false = "false";
+                string s = $"{lastChar}";
                 for (int i = 1; i < 6; i++)
+                {
                     if (lastChar == _false[i - 1])
-			NextChar();
+                        NextChar();
                     else
-                        throw new Exception("Ошибка false Boolean");
+                        return s.Substring(0, s.Length - 1);
+                    s += lastChar;
+                }
                 return false;
             }
             else
-		throw new Exception("Неверный Boolean");
+		        throw new Exception("Неверный Boolean");
         }
 
 	/// <summary>
@@ -410,39 +417,24 @@ namespace PdfCS
         /// </returns>
         public object ReadToken()
         {
-            if (tokens.Count != 0)
-                return tokens.Dequeue();
             SkipWhitespace();
             if (lastChar == '\uffff')
 		return '\uffff';
             if (lastChar == '+' || lastChar == '-' || lastChar == '.' || Char.IsDigit(lastChar))
             {
                 object o = ReadNumber();
-                if (o is int)
-                {
-                    object o2 = ReadToken();
-                    if (o2 is int)
-                    {
-                        object o3 = ReadToken();
-                        if (o3 is string && (string)o3 == "R")
-                            return Tuple.Create(o, o2);
-                        else
-                        {
-                            tokens.Enqueue(o);
-                            tokens.Enqueue(o2);
-                            tokens.Enqueue(o3);
-                            return tokens.Dequeue();
-			}
-                    }
-                    else
-                    {
-                        tokens.Enqueue(o);
-                        tokens.Enqueue(o2);
-                        return tokens.Dequeue();
-                    }
-                }
-                else
-                    return o;
+		char c = lastChar;
+		long pos = stream.Position;
+		object o2 = ReadToken();
+		object o3 = ReadToken();
+		if (o is int && o2 is int && o3 is string && (string)o3 == "R")
+		    return Tuple.Create((int)o, (int)o2);
+		else
+		{
+		    lastChar = c;
+		    stream.Seek(pos, SeekOrigin.Begin);
+		    return o;
+		}
             }
             else if (lastChar == '<')
             {
