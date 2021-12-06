@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace PdfCS
@@ -62,12 +63,22 @@ namespace PdfCS
         /// <summary>
         /// Объект класса Parser - синтаксического разбора объектов PDF
         /// </summary>
-        private static Parser parser;
+        public static Parser parser;
 
 	/// <summary>
         ///   Строка версии
         /// </summary>
-        static string version;
+        private static string version;
+
+	/// <summary>
+        /// Ссылка на каталог
+        /// </summary>
+        public static Tuple<int, int> root;
+
+        /// <summary>
+        /// Ссылка на информацию о документе (словарь)
+        /// </summary>
+        public static Tuple<int, int> info;
 
         /// <summary>
         /// Метод чтения объекта кэша -
@@ -101,7 +112,7 @@ namespace PdfCS
         /// <returns> возвращает прочитанный объект </returns>
         public static object ReadObjectFromStream(int streamNum, int index)
 	{
-            Stream rstream = (Stream)GetObject(streamNum, out Dictionary<string, object> dict);
+            /*Stream rstream = (Stream)GetObject(streamNum, out Dictionary<string, object> dict);
             if (dict.ContainsKey("Type") && (string)dict["Type"] != "ObjStm")
                 throw new System.Exception("Поле Type не является ObjStm");
             rstream.Seek((int)dict["First"], SeekOrigin.Begin);
@@ -110,7 +121,8 @@ namespace PdfCS
             objectCache.Add(index, o);
             if (dict.ContainsKey("Extends"))
                 ReadObjectFromStream(Tuple<int, int>);
-            return o;
+            return o;*/
+	    return null;
         }
 
 	/// <summary>
@@ -120,6 +132,58 @@ namespace PdfCS
         {
             StreamReader reader = new StreamReader(stream);
             version = reader.ReadLine().Substring(7);
+        }
+
+	/// <summary>
+        /// Читает данные в конце PDF файла
+        /// указатель файла уже перемещен на начало trailer
+        /// перед startxref находится словарь trailer(его читаем с помощью #11 ):
+        /// trailer
+        /// << key 1 value 1
+        /// key 2 value 2
+        /// ...
+        /// key n value n
+        /// startxref
+        /// Поля словаря:
+        /// Prev - (необязательный) смещение в файле предыдущей таблицы ссылок
+        /// Root - ссылка на каталог
+        /// Encrypt - словарь шифрования(если есть)
+        /// Info(необязательный) - ссылка на словарь информации о документе
+        /// ID(если есть шифрование или необязательный) - массив из двух байтовых строк - уникальный идентификатор файла(используется в шифровании файла)
+        /// Если есть Encrypt, то вызывается инициализация шифрования #37
+        /// Если было поле Prev, то нужно переместиться на данное смещение, вызвать загрузку таблицы ссылок #32
+	///
+        /// Пример:
+        /// trailer
+        /// << /Size 22
+        /// /Root 2 0 R
+        /// /Info 1 0 R
+        /// /ID[ <81b14aafa313db63dbd6f981e49f94f4>
+        /// <81b14aafa313db63dbd6f981e49f94f4> ]
+        /// >>
+        /// startxref
+        /// 18799
+        /// %%EOF
+        /// </summary>
+        /// 
+        private static void ReadTrailer()
+        {
+            Dictionary<string, object> trailer = (Dictionary<string, object>)parser.ReadToken();
+            root = (Tuple<int, int>)trailer["Root"];
+            if (trailer.ContainsKey("Info"))
+                info = (Tuple<int, int>)trailer["Info"];
+            if (trailer.ContainsKey("ID") && trailer.ContainsKey("Encrypt"))
+                Encryption.Init((Dictionary<string, object>)trailer["Encrypt"], (object[])trailer["ID"]);
+            if (trailer.ContainsKey("Prev"))
+            {
+                stream.Seek((long)trailer["Prev"], SeekOrigin.Begin);
+                ReadCrossReferenceTable();
+            }
+        }
+
+        private static void ReadCrossReferenceTable()
+        {
+
         }
     }
 }
