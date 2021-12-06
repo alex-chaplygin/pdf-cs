@@ -24,6 +24,7 @@
     <Compile Include="RunLengthTest.cs" />
     <Compile Include="ASCII85Test.cs" />
     <Compile Include="LZWTest.cs" />
+    <Compile Include="PDFFileTest.cs" />
   </ItemGroup>
 
 </Project>
