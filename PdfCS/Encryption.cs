@@ -181,6 +181,10 @@ namespace PdfCS
             return RC4.Decode(data, key);
         }
 
+	public static void Init(Dictionary<string, object> encrypt, object[] id)
+	{
+	}
+
         /// <summary>
         /// Инициализирует параметры стандартного фильтра дешифрования.
 	///
