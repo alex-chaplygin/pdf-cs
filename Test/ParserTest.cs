@@ -42,17 +42,6 @@ namespace PDFTest
 	}
 
         [TestMethod]
-        public void NullError()
-	{
-	    try {
-		TestToken("  nul ", typeof(object), null);
-		Assert.Fail();
-	    } catch (Exception e) {
-		Assert.AreEqual(e.Message, "Ошибка в null");
-	    }
-	}
-
-        [TestMethod]
         public void Number()
 	{
 	    TestToken("  10", typeof(int), 10);
@@ -82,20 +71,6 @@ namespace PDFTest
             {
 		Assert.AreEqual(ex.Message, "Ошибка true Boolean");
             }
-	}
-
-	[TestMethod]
-	public void FalseError()
-	{
-	    try
-	    {
-		TestToken("fals", typeof(bool), false);
-		Assert.Fail();
-	    }
-	    catch (Exception ex)
-	    {
-		Assert.AreEqual(ex.Message, "Ошибка false Boolean");
-	    }
 	}
 
 	[TestMethod]
@@ -389,6 +364,28 @@ namespace PDFTest
             {
 		Assert.AreEqual(ex.Message, "ReadArray завершился без закрывающей скобки");
 	    }
+	}
+
+	[TestMethod]
+	public void LinkTest()
+	{
+	    Tuple<int, int> t = (Tuple<int, int>)ReadToken("1 0 R");
+	    Assert.AreEqual(t.Item1, 1);
+	    Assert.AreEqual(t.Item2, 0);
+	}	
+
+	[TestMethod]
+	public void LinkTest2()
+	{
+	    int t = (int)ReadToken("1 0 1 R");
+	    Assert.AreEqual(t, 1);
+	}	
+
+	[TestMethod]
+	public void LinkTest3()
+	{
+	    int t = (int)ReadToken("0 6 0003 65535 f 00017 000");
+	    Assert.AreEqual(t, 0);
 	}	
     }
 }
