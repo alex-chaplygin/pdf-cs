@@ -78,8 +78,9 @@ namespace PdfCS
             {"BT", new Operator(BeginText)},
             {"ET", new Operator(EndText)},
             {"cm", new Operator(SetMatrix)},
-            {"q", new Operator(PushState)},
-            {"Q", new Operator(PopState)},
+            {"Tm", new Operator(SetTextMatrix)},
+            {"q",  new Operator(PushState)},
+            {"Q",  new Operator(PopState)},
             {"Tf", new Operator(SelectFont)},
         };
 
@@ -153,6 +154,22 @@ namespace PdfCS
             Matrix matrix = new Matrix(a, b, c, d, e, f);
 
             currentState.CTM = matrix.Mult(currentState.CTM);
+        }
+
+        /// <summary>
+        /// Устанавливает текстовую матрицу
+        /// Параметры извлекаются из стека операндов внутри метода.
+        /// </summary>
+        private static void SetTextMatrix()
+        {
+            var f = (double)operands.Pop();
+            var e = (double)operands.Pop();
+            var d = (double)operands.Pop();
+            var c = (double)operands.Pop();
+            var b = (double)operands.Pop();
+            var a = (double)operands.Pop();
+
+            currentState.textMatrix = new Matrix(a, b, c, d, e, f);
         }
 
         /// <summary>
