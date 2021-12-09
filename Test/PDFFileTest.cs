@@ -100,5 +100,16 @@ namespace PDFTest
              };
             Test(s, table); 
         }
+
+	[TestMethod]
+        public void OpenTest()
+        {
+            string path = "test.pdf";
+            Assert.IsTrue(File.Exists(path));
+
+            FileStream fileStream = File.OpenRead(path);
+            PDFFile.Open(fileStream);
+            Assert.IsTrue(PDFFile.xrefTable.Length > 0);
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace PdfCS
 {
@@ -288,6 +289,37 @@ namespace PdfCS
                 }
             }
             //ReadTrailer();
+        }
+
+	/// <summary>
+        /// Читает структуру PDF файла
+        /// </summary>
+        /// <param name="s"> Поток файла </param>
+        public static void Open(Stream s)
+        {
+            stream = s;
+            parser = new Parser(stream);
+            objectCache = new Dictionary<int, object>();
+            ReadHeader();
+
+            string line = "";
+            int count = -8;
+
+            while (true)
+            {
+                s.Seek(count, SeekOrigin.End);
+                int bt = s.ReadByte();
+                string str = System.Text.Encoding.Default.GetString(BitConverter.GetBytes(bt));
+                if (int.TryParse(str, out bt))
+                    line += bt.ToString();
+                else
+                    break;
+                count--;
+            }
+            int xrefOffset = int.Parse(new String(line.Reverse().ToArray()));
+            stream.Seek(xrefOffset, SeekOrigin.Begin);
+	    parser.NextChar();
+            ReadCrossReferenceTable();
         }
     }
 }
