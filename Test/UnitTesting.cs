@@ -17,6 +17,12 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 	    throw new Exception("Fail");
 	}
 
+	public static void IsTrue(bool c)
+	{
+	    if (!c)
+		Fail();
+	}
+	
 	public static void AreEqual(object o, object o2)
 	{
 	    if (o is int)
