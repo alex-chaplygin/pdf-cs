@@ -87,6 +87,11 @@ namespace PdfCS
         private static State currentState;
 
         /// <summary>
+        /// Стэк состояний
+        /// </summary>
+        private static Stack<State> states;
+
+        /// <summary>
         /// Прямоуголник страницы
         /// </summary>
         private static Rectangle mediaBox;
@@ -227,7 +232,7 @@ namespace PdfCS
         /// </summary>
         static void PushState()
         {
-
+            states.Push(currentState);
         }
 
         /// <summary>
@@ -235,8 +240,8 @@ namespace PdfCS
         /// </summary>
         static void PopState()
         {
-
-
+            if (states.Count > 0)
+                currentState = states.Pop();
         }
 
         /// <summary>
