@@ -383,6 +383,71 @@ namespace PdfCS
             return stream;
         }
 
+	/// <summary>
+        /// Преобразование int в byte[] в little-endian порядке
+        /// </summary>
+        /// <param name="i">число для преобразования</param>
+        /// <param name="num">нужное количество байт</param>
+        private static byte[] IntToBytes(int i, int num)
+        {
+            byte[] bytes = BitConverter.GetBytes(i);
+            if (!BitConverter.IsLittleEndian)
+                Array.Reverse(bytes);
+            if (bytes.Length < num)
+            {
+                return Enumerable.Repeat((byte)0x00, num - bytes.Length).Concat(bytes).ToArray();
+            }
+            if (bytes.Length > num)
+            {
+                return bytes.Skip(bytes.Length - num).ToArray();
+            }
+            return bytes;
+        }
+
+        /// <summary>
+        /// Декодирование объекта
+        /// Алгоритм:
+        /// 1. Берем encryptionKey
+        /// 2. Добавляем 3 байта от objNum
+        /// 3. Добавляем 2 байта от genNum
+        /// 4. Если aes, добавляем дополнительные 4 байта
+        /// 5. Получаем 16 байт MD5 из ключа
+        /// 6. Передаем объект и полученный хэш в соответсвующие типу кодировки методы
+        /// 7. Преобразуем формат результата для соответствия входному типу
+        /// 8. Возвращаем результат
+        /// </summary>
+        /// <param name="o">дешифрруемый объект(строка- char[], поток - byte[])</param>
+        /// <param name="objNum">номер</param>
+        /// <param name="genNum">поколение</param>
+        /// <returns>дешифрованный объект char[] или byte[], тип вывода соответсвует o</returns>
+        public static object DecryptObject(object o, int objNum, int genNum, bool aes)
+        {
+            byte[] obj;
+            if (o.GetType() == typeof(char[]))
+                obj = ((char[])o).Select(x => (byte)x).ToArray();
+            else
+                obj = (byte[])o;
+            List<byte> key = encryptionKey.ToList();
+            key.AddRange(IntToBytes(objNum, 3));
+            key.AddRange(IntToBytes(genNum, 2));
+            if (aes)
+                key.AddRange(new List<byte> {0x73, 0x41, 0x6c, 0x54});
+            byte[] hash = MD5.Create().ComputeHash(key.ToArray()).Take(16).ToArray();
+            byte[] result;
+            if (aes) 
+                result = DecodeAES(obj, hash, ((byte[])o).Take(16).ToArray());
+            else 
+                result = DecodeRC4(obj, hash);
+            if (o.GetType() == typeof(char[]))
+                return result.Select(x => (char)x).ToArray();
+            return result;
+        }
+
+	static byte[] DecodeAES(byte[] data, byte[] key, byte[] initVec)
+	{
+	    return data;
+	}
+
         /// <summary>
         /// заглушка
         /// </summary>
