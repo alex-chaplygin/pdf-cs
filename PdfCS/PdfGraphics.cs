@@ -5,6 +5,7 @@ using System.Drawing;
 using System.ComponentModel.Design;
 using System.Drawing.Drawing2D;
 using System.Windows.Input;
+using System.IO;
 
 namespace PdfCS
 {
@@ -41,7 +42,24 @@ namespace PdfCS
             /// <summary>
             /// Текущий размер шрифта
             /// </summary>
-            public int currentFontSize;
+            public int textFontSize;
+
+	    /// <summary>
+            /// имя шрифта
+            /// </summary>
+            public string textFont;
+
+            /// <summary>
+            /// расстояние в немасштабированных единицах пользователя
+            /// 
+            /// насколько текст поднимается относительно строки
+            /// </summary>
+            public double textRise;
+
+            /// <summary>
+            /// горизонтальное масштабирование
+            /// </summary>
+            public double horizontalScale;
         }
 
         /// <summary>
@@ -53,6 +71,14 @@ namespace PdfCS
             public double lly;
             public double urx;
             public double ury;
+
+	    public Rectangle(double llx, double lly, double urx, double ury)
+            {
+                this.llx = llx;
+                this.lly = lly;
+                this.urx = urx;
+                this.ury = ury;
+            }
         }
 
         /// <summary>
@@ -82,6 +108,7 @@ namespace PdfCS
             {"q",  new Operator(PushState)},
             {"Q",  new Operator(PopState)},
             {"Tf", new Operator(SelectFont)},
+	    {"Tj", new Operator(ShowText)},
         };
 
         /// <summary>
@@ -99,6 +126,7 @@ namespace PdfCS
             currentState.beginText = false;
             graphics = g;
             mediaBox = r;
+	    operands = new Stack<object>();
         }
 
         /// <summary>
@@ -122,6 +150,9 @@ namespace PdfCS
                 throw new Exception("Текстовый объект уже создан");
             currentState.textMatrix = new Matrix();
             currentState.beginText = true;
+	    currentState.textFont = "Arial";
+            currentState.textRise = 0;
+            currentState.horizontalScale = 1.0;
         }
 
         /// <summary>
@@ -131,7 +162,7 @@ namespace PdfCS
         private static void EndText()
         {
             currentState.beginText = false;
-	    }
+	}
 	
         /// <summary>
         /// Модифицирует текущую матрицу трансформаций в текущем состоянии #51
@@ -198,9 +229,9 @@ namespace PdfCS
         ///имя шрифта пропускается, размер шрифта - сохраняется в поле
         ///добавить команду в таблицу команд
         /// </summary>
-        static void SelectFont()
+        private static void SelectFont()
         {
-            currentState.currentFontSize = (int)operands.Pop();
+            currentState.textFontSize = (int)operands.Pop();
             operands.Pop();
         }
 
@@ -209,12 +240,26 @@ namespace PdfCS
         /// </summary>
         /// <param name="content">поток содержимого страницы (команды графики)</param>
         /// <param name="resources">словарь ресурсов страницы</param>
-        static void Render(byte[] content, Dictionary<string, object> resources)
+        public static void Render(byte[] content, Dictionary<string, object> resources)
         {
+	    Parser parser = new Parser(new MemoryStream(content));
+            parser.NextChar();
+            object temp;
+            while (true)
+            {
+                temp = parser.ReadToken();
+                if (temp is char && (char)temp == '\uffff')
+                    return;
+                if (temp is string && commands.ContainsKey((string)temp))
+                    commands[(string)temp]();
+                else
+                    operands.Push(temp);
+            }
         }
+	
         /// <summary>
         ///перемещает позицию текста
-
+	///
         /// tx ty Td
         /// операнды tx ty берутся из стека операндов #52
         /// создается матрица перемещения Mt #50
@@ -228,6 +273,38 @@ namespace PdfCS
             // Матрица перемещения
             Matrix Mt = new Matrix(1, 0, 0, 1, tx, ty);
             currentState.textMatrix = Mt.Mult(currentState.textMatrix);
+        }
+
+	/// <summary>
+        /// выводит строку текста
+        /// 
+        /// операнд - строка (тип char[])
+        /// вывод осуществляется в координаты x = 0, y = 0 пространства текста
+        /// формула преобразований:
+        /// Tm - текстовая матрица
+        /// CTM - матрица трансформации
+        /// Вычисляется матрица T(textFontSize* horizontalScale, 0, 0, textFontSize, 0, textRise)
+        /// Матрица вывода:
+        /// Tr = T* Tm * CTM
+        /// координаты вывода в окно вычисляются как умножение вектора x, y на матрицу Tr
+        /// выводим текст через объект Graphics
+        /// устанавливаем шрифт с именем textFont и размером textFontSize умноженным на коэффициент d матрицы CTM
+        /// </summary>
+        public static void ShowText()
+        {
+            char[] array = (char[])operands.Pop();
+
+            Matrix T = new Matrix();// currentState.textFontSize * currentState.horizontalScale, 0, 0, currentState.textFontSize, 0, currentState.textRise);
+
+            Matrix Tr = T.Mult(currentState.textMatrix);
+            Tr = Tr.Mult(currentState.CTM);
+
+            double x, y;
+            Tr.MultVector(100, 100, out x, out y);
+
+            graphics.DrawString(String.Concat<char>(array), new Font(currentState.textFont,
+                (int)Math.Abs(currentState.textFontSize * currentState.CTM.GetValues()[3])),
+                new SolidBrush(Color.Black), (int)x, (int)y);
         }
     }
 }
