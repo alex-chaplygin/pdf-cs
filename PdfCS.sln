@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfCS", "PdfCS\PdfCS.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PDFTest", "Test\PDFTest.csproj", "{132EE0A2-80C7-495A-BFC5-FD45D7B08A0E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MainForm", "MainForm\MainForm.csproj", "{BFF5F8EA-8E74-4C11-9B30-42D42D9D30D8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,11 +23,15 @@ Global
 		{132EE0A2-80C7-495A-BFC5-FD45D7B08A0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{132EE0A2-80C7-495A-BFC5-FD45D7B08A0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{132EE0A2-80C7-495A-BFC5-FD45D7B08A0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFF5F8EA-8E74-4C11-9B30-42D42D9D30D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFF5F8EA-8E74-4C11-9B30-42D42D9D30D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFF5F8EA-8E74-4C11-9B30-42D42D9D30D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFF5F8EA-8E74-4C11-9B30-42D42D9D30D8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {A7FB0BAA-B617-428B-8795-D3AFFBFF98A9}
+		SolutionGuid = {554D6C91-7A98-4EAC-A69C-E25D09D3B906}
 	EndGlobalSection
 EndGlobal
