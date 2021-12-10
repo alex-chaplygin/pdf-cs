@@ -50,6 +50,8 @@
     <Compile Include="Encryption.cs" />
     <Compile Include="Matrix.cs" />
     <Compile Include="PdfGraphics.cs" />
+    <Compile Include="Graphics\Segment.cs" />
+    <Compile Include="Graphics\Curve.cs" />
     <Compile Include="Filters\ASCII85.cs" />
     <Compile Include="Filters\ASCIIHex.cs" />
     <Compile Include="Filters\BitReader.cs" />
