@@ -87,9 +87,31 @@ namespace PdfCS
         private static State currentState;
 
         /// <summary>
+        /// Стэк состояний
+        /// </summary>
+        private static Stack<State> states;
+
+        /// <summary>
         /// Прямоуголник страницы
         /// </summary>
         private static Rectangle mediaBox;
+
+        private struct CurrentPath
+        {
+            /// <summary>
+            /// Начало пути 
+            /// </summary>
+            public Point begin;
+            /// <summary>
+            /// Список участков пути
+            /// </summary>
+            public List<Segment> segments;
+        }
+
+        /// <summary>
+        /// Текущий путь
+        /// </summary>
+        private static CurrentPath currentPath;
 
         /// <summary>
         /// функция оператора графики
@@ -108,7 +130,9 @@ namespace PdfCS
             {"q",  new Operator(PushState)},
             {"Q",  new Operator(PopState)},
             {"Tf", new Operator(SelectFont)},
-	    {"Tj", new Operator(ShowText)},
+	        {"Tj", new Operator(ShowText)},
+            {"m",new Operator(BeginPath)},
+            {"l",new Operator(AddLine)},
         };
 
         /// <summary>
@@ -208,7 +232,7 @@ namespace PdfCS
         /// </summary>
         static void PushState()
         {
-
+            states.Push(currentState);
         }
 
         /// <summary>
@@ -216,8 +240,8 @@ namespace PdfCS
         /// </summary>
         static void PopState()
         {
-
-
+            if (states.Count > 0)
+                currentState = states.Pop();
         }
 
         /// <summary>
@@ -305,6 +329,23 @@ namespace PdfCS
             graphics.DrawString(String.Concat<char>(array), new Font(currentState.textFont,
                 (int)Math.Abs(currentState.textFontSize * currentState.CTM.GetValues()[3])),
                 new SolidBrush(Color.Black), (int)x, (int)y);
+        }
+
+        static void BeginPath()
+        {
+            var y = (int)operands.Pop();
+            var x = (int)operands.Pop();
+
+            currentPath.begin = new Point(x, y);
+            currentPath.segments = new List<Segment>();
+        }
+
+        static void AddLine()
+        {
+            var y = (int)operands.Pop();
+            var x = (int)operands.Pop();
+
+            currentPath.segments.Add(new Segment { pointTo = new Point(x, y) });
         }
     }
 }
