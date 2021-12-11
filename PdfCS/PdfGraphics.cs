@@ -303,8 +303,8 @@ namespace PdfCS
         /// </summary>
         private static void TextMove()
         {
-            var ty = (double)operands.Pop();
-            var tx = (double)operands.Pop();
+            var ty = (int)operands.Pop();
+            var tx = (int)operands.Pop();
             // Матрица перемещения
             Matrix Mt = new Matrix(1, 0, 0, 1, tx, ty);
             currentState.textMatrix = Mt.Mult(currentState.textMatrix);
@@ -335,7 +335,7 @@ namespace PdfCS
             Tr = Tr.Mult(currentState.CTM);
 
             double x, y;
-            Tr.MultVector(100, 100, out x, out y);
+            Tr.MultVector(0, 0, out x, out y);
 
             graphics.DrawString(String.Concat<char>(array), new Font(currentState.textFont,
                 (int)Math.Abs(currentState.textFontSize * currentState.CTM.GetValues()[3])),
@@ -373,22 +373,5 @@ namespace PdfCS
 		currentPath.segments = new List<Segment>();
             currentPath.segments.Add(new Segment { pointTo = new Point(x, y) });
         }
-
-	/// <summary>
-        ///перемещает позицию текста
-        /// tx ty Td
-        /// операнды tx ty берутся из стека операндов #52
-        /// создается матрица перемещения Mt #50
-        /// из текущего состояния #51 #55 берется текстовая матрица MT и преобразуется
-        /// MT = Mt * MT
-        /// </summary>
-        private static void TextMove()
-        {
-            var ty = (double)operands.Pop();
-            var tx = (double)operands.Pop();
-            // Матрица перемещения
-            Matrix Mt = Matrix.Translate(tx,ty);
-            currentState.textMatrix = Mt.Mult(currentState.textMatrix);
-        }	
     }
 }
