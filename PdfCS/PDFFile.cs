@@ -114,26 +114,6 @@ namespace PdfCS
             objectCache.Add(num, obj);
             return obj;
         }
-        /// <summary>
-        /// Читает сжатый объект из потока, содержащего объекты
-        /// </summary>
-        /// <param name="streamNum"> номер объекта, содержащего поток объектов </param>
-        /// <param name="index"> индекc объекта в потоке </param>
-        /// <returns> возвращает прочитанный объект </returns>
-        public static object ReadObjectFromStream(int streamNum, int index)
-	{
-            /*Stream rstream = (Stream)GetObject(streamNum, out Dictionary<string, object> dict);
-            if (dict.ContainsKey("Type") && (string)dict["Type"] != "ObjStm")
-                throw new System.Exception("Поле Type не является ObjStm");
-            rstream.Seek((int)dict["First"], SeekOrigin.Begin);
-            parser = new Parser((MemoryStream)rstream);
-            object o = parser.ReadToken();
-            objectCache.Add(index, o);
-            if (dict.ContainsKey("Extends"))
-                ReadObjectFromStream(Tuple<int, int>);
-            return o;*/
-	    return null;
-        }
 
 	/// <summary>
         ///  Метод для чтения заголовка
@@ -321,5 +301,79 @@ namespace PdfCS
 	    parser.NextChar();
             ReadCrossReferenceTable();
         }
+
+	/// <summary>
+        /// Читает сжатый объект из потока, содержащего объекты
+        /// читаем потоковый объект #35
+        /// в считанном словаре могут быть дополнительные поля
+        /// Type - обязательно должно равняться ObjStm
+        /// N - число объектов в этом потоке
+        /// First - смещение в байтах внутри потока, где находится первый объект
+        /// Extends(необязательно) - ссылка на продолжение потока
+        /// считанный поток открываем как MemoryStream и читаем с помощью парсера (#11)
+        /// в начале идут N пар целых чисел, первое число в паре - номер объекта,
+	/// второе - смещение в этом потоке, относительно поля First.все смещения идут по возрастанию, номера объектов - в произвольном порядке.
+        /// сами объекты записаны последовательно в виде данных, без ключевых слов obj и endobj
+        /// переходим по смещению, считываем объект #11 и записываем в кеш #35
+        /// если есть Extends, то вызываем рекурсивно чтение объекта из потока объектов по заданной ссылке (Tuple<int, int>)
+        /// 15 0 obj % The object stream
+        //<< /Type /ObjStm
+        ///Length 1856
+        ///N 3 % The number of objects in the stream
+        ///First 19 % The byte offset in the decoded stream of the first object
+        //% The object numbers and offsets of the objects, relative to the first are shown on the first line of
+        //% the stream(i.e., 11 0 12 547 13 665).
+        //>>
+        //stream
+        //11 0 12 547 13 665
+        //<< /Type /Font
+        ///Subtype /TrueType
+        ///FontDescriptor 12 0 R
+        //>>
+        //<< /Type /FontDescriptor
+        ///Ascent 891
+        ///FontFile2 22 0 R
+        //>>
+        //<< /Type /Font
+        ///Subtype /Type0
+        ///ToUnicode 10 0 R
+        //>>
+        //endstream
+        //endobj
+        /// </summary>
+        /// <param name="streamNum"> номер объекта, содержащего поток объектов </param>
+        /// <param name="index"> индекc объекта в потоке </param>
+        /// <returns> возвращает прочитанный объект </returns>
+        public static object ReadObjectFromStream(int streamNum,int index)
+	{
+            Dictionary<string, object> dict;
+            byte[] bstream = (byte[])GetObject(streamNum, out  dict);
+            if (dict.ContainsKey("Type") && (string)dict["Type"] != "ObjStm")
+                throw new Exception("Поле Type не является ObjStm");
+            if((long)dict["N"] > index && !dict.ContainsKey("Extends"))
+                throw new Exception("Избыточные элементы потока не содержатся в поле Extends");
+            if ((long)dict["N"] > index)
+            {
+                Stream stream = new MemoryStream(bstream);
+                parser = new Parser(stream);
+                parser.NextChar();
+                int num = 0;
+                int ofs = 0;
+                for (int i = 0; i <= index; i++)
+                {
+                    num = (int)parser.ReadToken();
+                    ofs = (int)parser.ReadToken();
+                }
+                stream.Seek(ofs + (long)dict["First"], SeekOrigin.Begin);
+                object obj = parser.ReadToken();
+                objectCache.Add(num, obj);
+                return obj;
+            }
+            else
+            {
+                Tuple<int, int> t = (Tuple<int, int>)dict["Extends"];
+                return ReadObjectFromStream(t.Item1, (int)((long)dict["N"] - index));
+            }
+        }	
     }
 }
