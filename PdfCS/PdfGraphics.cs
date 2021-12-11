@@ -42,6 +42,16 @@ namespace PdfCS
             /// Текущий размер шрифта
             /// </summary>
             public int currentFontSize;
+
+            /// <summary>
+            /// Текущая координата по x
+            /// </summary>
+            public double textX;
+
+            /// <summary>
+            /// Текущая координата по y
+            /// </summary>
+            public double textY;
         }
 
         /// <summary>
@@ -211,6 +221,31 @@ namespace PdfCS
             // Матрица перемещения
             Matrix Mt = new Matrix(1, 0, 0, 1, tx, ty);
             currentState.textMatrix = Mt.Mult(currentState.textMatrix);
+        }
+
+        static void ShowText()
+        {
+
+        }
+
+        /// <summary>
+        /// Отображает одну или более строк.
+        /// Параметр массив, каждый элемент массива строка или число.
+        /// Если элемент строка, то отображается строка используя #57
+        /// Если число, то позиция текста смещается на указанное число x/1000, это число должно быть вычтено из текущей горизонтальной координаты.
+        /// </summary>
+        void ShowStrings()
+        {
+            foreach (object x in operands)
+            {
+                if (x is string)
+                {
+                    operands.Push(x);
+                    ShowText();
+                }
+                if (x is double)
+                    currentState.textX += (double)x/1000;
+            }
         }
     }
 }
