@@ -67,8 +67,15 @@ namespace PdfCS
         /// </summary>
         public struct Rectangle
         {
+	    /// <summary>
+	    ///   левый нижний угол
+	    /// </summary>
             public double llx;
             public double lly;
+
+	    /// <summary>
+	    ///   правый верхний угол
+	    /// </summary>
             public double urx;
             public double ury;
 
@@ -96,6 +103,9 @@ namespace PdfCS
         /// </summary>
         private static Rectangle mediaBox;
 
+	/// <summary>
+	///   структура текущего пути
+	/// </summary>
         private struct CurrentPath
         {
             /// <summary>
@@ -130,9 +140,10 @@ namespace PdfCS
             {"q",  new Operator(PushState)},
             {"Q",  new Operator(PopState)},
             {"Tf", new Operator(SelectFont)},
-	        {"Tj", new Operator(ShowText)},
+	    {"Tj", new Operator(ShowText)},
             {"m",new Operator(BeginPath)},
             {"l",new Operator(AddLine)},
+	    {"Td",new Operator(TextMove)},
         };
 
         /// <summary>
@@ -331,7 +342,14 @@ namespace PdfCS
                 new SolidBrush(Color.Black), (int)x, (int)y);
         }
 
-        static void BeginPath()
+	/// <summary>
+	///   начало пути
+	///
+	/// x y m
+	/// начинает новый путь с точки x, y
+	/// предыдущий путь не сохраняется
+	/// </summary>
+        private static void BeginPath()
         {
             var y = (int)operands.Pop();
             var x = (int)operands.Pop();
@@ -340,12 +358,37 @@ namespace PdfCS
             currentPath.segments = new List<Segment>();
         }
 
-        static void AddLine()
+	/// <summary>
+	///   добавление прямой линии
+	///
+	/// x y l
+	/// добавляет сегмент прямой линии в текущий путь
+	/// </summary>
+        private static void AddLine()
         {
             var y = (int)operands.Pop();
             var x = (int)operands.Pop();
 
+	    if (currentPath.segments == null)
+		currentPath.segments = new List<Segment>();
             currentPath.segments.Add(new Segment { pointTo = new Point(x, y) });
         }
+
+	/// <summary>
+        ///перемещает позицию текста
+        /// tx ty Td
+        /// операнды tx ty берутся из стека операндов #52
+        /// создается матрица перемещения Mt #50
+        /// из текущего состояния #51 #55 берется текстовая матрица MT и преобразуется
+        /// MT = Mt * MT
+        /// </summary>
+        private static void TextMove()
+        {
+            var ty = (double)operands.Pop();
+            var tx = (double)operands.Pop();
+            // Матрица перемещения
+            Matrix Mt = Matrix.Translate(tx,ty);
+            currentState.textMatrix = Mt.Mult(currentState.textMatrix);
+        }	
     }
 }
