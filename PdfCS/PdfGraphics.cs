@@ -91,6 +91,7 @@ namespace PdfCS
             {"q", new Operator(PushState)},
             {"Q", new Operator(PopState)},
             {"Tf", new Operator(SelectFont)},
+            {"TJ", new Operator(ShowStrings)}
         };
 
         /// <summary>
@@ -234,7 +235,7 @@ namespace PdfCS
         /// Если элемент строка, то отображается строка используя #57
         /// Если число, то позиция текста смещается на указанное число x/1000, это число должно быть вычтено из текущей горизонтальной координаты.
         /// </summary>
-        void ShowStrings()
+        private static void ShowStrings()
         {
             foreach (object x in operands)
             {
