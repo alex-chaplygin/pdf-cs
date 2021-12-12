@@ -86,6 +86,7 @@ namespace PdfCS
             {"q", new Operator(PushState)},
             {"Q", new Operator(PopState)},
             {"Tf", new Operator(SelectFont)},
+            {"T*", new Operator(NextLine)}
         };
 
         /// <summary>
