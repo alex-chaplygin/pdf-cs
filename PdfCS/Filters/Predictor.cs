@@ -13,7 +13,17 @@ namespace PdfCS
     {
 	public static byte[] Decode(byte[] data, int predictor, int colors, int bpp, int columns)
 	{
-	    return data;
+	    byte[] pred = new byte[colors];
+            for (int i = 0; i < data.Length / colors; i++)
+                for (int j = 0; j < colors; j++)
+                {
+                    if ((i * colors) % columns == 0)
+                        pred[j] = 0;
+                    else
+                        pred[j] = data[(i - 1) * colors + j];
+                    data[i * colors + j] += pred[j];
+                }
+            return data;
 	}
     }
 }
