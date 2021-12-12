@@ -415,7 +415,13 @@ namespace PdfCS
             operands.Push(x);
             operands.Push(y + height);
             AddLine();
-            // ClosePath();
+            ClosePath();
+        }
+
+
+        private static void ClosePath()
+        {
+
         }
     }
 }
