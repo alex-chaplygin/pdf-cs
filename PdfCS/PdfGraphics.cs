@@ -152,6 +152,7 @@ namespace PdfCS
             {"l", new Operator(AddLine)},
 	        {"Td", new Operator(TextMove)},
             {"w", new Operator(SetLineWidth)},
+            {"re", new Operator(AddRectangle)},
         };
 
         /// <summary>
@@ -389,6 +390,32 @@ namespace PdfCS
         private static void SetLineWidth()
         {
             currentState.lineWidth = (double)operands.Pop();
+        }
+
+        /// <summary>
+        /// Добавляет прямоугольник в текущий путь
+        /// x y width height re
+        /// </summary>
+        private static void AddRectangle()
+        {
+            var height = (double)operands.Pop();
+            var width = (double)operands.Pop();
+            var y = (double)operands.Pop();
+            var x = (double)operands.Pop();
+
+            operands.Push(x);
+            operands.Push(y);
+            BeginPath();
+            operands.Push(x + width);
+            operands.Push(y);
+            AddLine();
+            operands.Push(x + width);
+            operands.Push(y + height);
+            AddLine();
+            operands.Push(x);
+            operands.Push(y + height);
+            AddLine();
+            // ClosePath();
         }
     }
 }
