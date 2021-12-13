@@ -67,6 +67,11 @@ namespace PdfCS
             /// ширина 0 соответствует 1 pixel на экране
             /// </summary>
             public double lineWidth;
+
+            /// <summary>
+            /// Расстояние между строк
+            /// </summary>
+            public double leading;
         }
 
         /// <summary>
@@ -86,7 +91,7 @@ namespace PdfCS
             public double urx;
             public double ury;
 
-	        public Rectangle(double llx, double lly, double urx, double ury)
+	    public Rectangle(double llx, double lly, double urx, double ury)
             {
                 this.llx = llx;
                 this.lly = lly;
@@ -147,12 +152,13 @@ namespace PdfCS
             {"q",  new Operator(PushState)},
             {"Q",  new Operator(PopState)},
             {"Tf", new Operator(SelectFont)},
-	        {"Tj", new Operator(ShowText)},
+	    {"Tj", new Operator(ShowText)},
             {"m", new Operator(BeginPath)},
             {"l", new Operator(AddLine)},
-	        {"Td", new Operator(TextMove)},
+	    {"Td", new Operator(TextMove)},
             {"w", new Operator(SetLineWidth)},
             {"re", new Operator(AddRectangle)},
+            {"T*", new Operator(NextLine)}
         };
 
         /// <summary>
@@ -422,6 +428,18 @@ namespace PdfCS
         private static void ClosePath()
         {
 
+        }
+
+        /// <summary>
+        /// Перемещает позицию вывода текста на следующую строку.
+        /// В структуре состояния параметр называется double leading.
+        /// Вызвать команду 0, -leading, Td #56
+        /// </summary>
+        private static void NextLine()
+        {
+            operands.Push(0);
+            operands.Push(-currentState.leading);
+            TextMove();
         }
     }
 }
