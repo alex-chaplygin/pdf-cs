@@ -162,14 +162,15 @@ namespace PdfCS
             {"q",  new Operator(PushState)},
             {"Q",  new Operator(PopState)},
             {"Tf", new Operator(SelectFont)},
-	    {"Tj", new Operator(ShowText)},
-            {"m", new Operator(BeginPath)},
-            {"l", new Operator(AddLine)},
-	    {"Td", new Operator(TextMove)},
-            {"w", new Operator(SetLineWidth)},
+	        {"Tj", new Operator(ShowText)},
+            {"m",  new Operator(BeginPath)},
+            {"l",  new Operator(AddLine)},
+	        {"Td", new Operator(TextMove)},
+            {"w",  new Operator(SetLineWidth)},
             {"re", new Operator(AddRectangle)},
             {"T*", new Operator(NextLine)},
             {"TJ", new Operator(ShowStrings)},
+            {"'",  new Operator(MoveAndShowText)}
         };
 
         /// <summary>
@@ -368,13 +369,24 @@ namespace PdfCS
                 new SolidBrush(Color.Black), (int)x, (int)y);
         }
 
-	    /// <summary>
-	    /// начало пути
-	    ///
-	    /// x y m
-	    /// начинает новый путь с точки x, y
-	    /// предыдущий путь не сохраняется
-	    /// </summary>
+        /// <summary>
+        /// Параметр - string. Берется из стека операндов.
+        /// Перемещается на следующую строчку #60
+        /// Выводит строку #57
+        /// </summary>
+        private static void MoveAndShowText()
+        {
+            NextLine();
+            ShowText();
+        }
+
+        /// <summary>
+        /// начало пути
+        ///
+        /// x y m
+        /// начинает новый путь с точки x, y
+        /// предыдущий путь не сохраняется
+        /// </summary>
         private static void BeginPath()
         {
             var y = (int)operands.Pop();
