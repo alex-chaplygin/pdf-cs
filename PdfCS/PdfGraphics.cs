@@ -72,6 +72,16 @@ namespace PdfCS
             /// Расстояние между строк
             /// </summary>
             public double leading;
+
+            /// <summary>
+            /// Текущая координата по x
+            /// </summary>
+            public double textX;
+
+            /// <summary>
+            /// Текущая координата по y
+            /// </summary>
+            public double textY;
         }
 
         /// <summary>
@@ -158,7 +168,8 @@ namespace PdfCS
 	    {"Td", new Operator(TextMove)},
             {"w", new Operator(SetLineWidth)},
             {"re", new Operator(AddRectangle)},
-            {"T*", new Operator(NextLine)}
+            {"T*", new Operator(NextLine)},
+            {"TJ", new Operator(ShowStrings)},
         };
 
         /// <summary>
@@ -325,7 +336,7 @@ namespace PdfCS
             currentState.textMatrix = Mt.Mult(currentState.textMatrix);
         }
 
-	    /// <summary>
+	/// <summary>
         /// выводит строку текста
         /// 
         /// операнд - строка (тип char[])
@@ -384,8 +395,8 @@ namespace PdfCS
             var y = (int)operands.Pop();
             var x = (int)operands.Pop();
 
-	        if (currentPath.segments == null)
-		        currentPath.segments = new List<Segment>();
+	    if (currentPath.segments == null)
+		currentPath.segments = new List<Segment>();
             currentPath.segments.Add(new Segment { pointTo = new Point(x, y) });
         }
 
@@ -440,6 +451,25 @@ namespace PdfCS
             operands.Push(0);
             operands.Push(-currentState.leading);
             TextMove();
+	}
+
+        /// Отображает одну или более строк.
+        /// Параметр массив, каждый элемент массива строка или число.
+        /// Если элемент строка, то отображается строка используя #57
+        /// Если число, то позиция текста смещается на указанное число x/1000, это число должно быть вычтено из текущей горизонтальной координаты.
+        /// </summary>
+        private static void ShowStrings()
+        {
+            foreach (object x in operands)
+            {
+                if (x is string)
+                {
+                    operands.Push(x);
+                    ShowText();
+                }
+                if (x is double)
+                    currentState.textX += (double)x/1000;
+            }
         }
     }
 }
