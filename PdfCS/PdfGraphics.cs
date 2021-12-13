@@ -44,7 +44,7 @@ namespace PdfCS
             /// </summary>
             public int textFontSize;
 
-	    /// <summary>
+	        /// <summary>
             /// имя шрифта
             /// </summary>
             public string textFont;
@@ -60,6 +60,13 @@ namespace PdfCS
             /// горизонтальное масштабирование
             /// </summary>
             public double horizontalScale;
+
+            /// <summary>
+            /// Текущая ширина линии в пользовательских единицах
+            /// для перевода в экранную толщину нужно использовать коэффициент a матрицы CTM
+            /// ширина 0 соответствует 1 pixel на экране
+            /// </summary>
+            public double lineWidth;
         }
 
         /// <summary>
@@ -67,19 +74,19 @@ namespace PdfCS
         /// </summary>
         public struct Rectangle
         {
-	    /// <summary>
-	    ///   левый нижний угол
-	    /// </summary>
+	        /// <summary>
+	        ///   левый нижний угол
+	        /// </summary>
             public double llx;
             public double lly;
 
-	    /// <summary>
-	    ///   правый верхний угол
-	    /// </summary>
+	        /// <summary>
+	        ///   правый верхний угол
+	        /// </summary>
             public double urx;
             public double ury;
 
-	    public Rectangle(double llx, double lly, double urx, double ury)
+	        public Rectangle(double llx, double lly, double urx, double ury)
             {
                 this.llx = llx;
                 this.lly = lly;
@@ -103,9 +110,9 @@ namespace PdfCS
         /// </summary>
         private static Rectangle mediaBox;
 
-	/// <summary>
-	///   структура текущего пути
-	/// </summary>
+	    /// <summary>
+	    ///   структура текущего пути
+	    /// </summary>
         private struct CurrentPath
         {
             /// <summary>
@@ -140,10 +147,12 @@ namespace PdfCS
             {"q",  new Operator(PushState)},
             {"Q",  new Operator(PopState)},
             {"Tf", new Operator(SelectFont)},
-	    {"Tj", new Operator(ShowText)},
-            {"m",new Operator(BeginPath)},
-            {"l",new Operator(AddLine)},
-	    {"Td",new Operator(TextMove)},
+	        {"Tj", new Operator(ShowText)},
+            {"m", new Operator(BeginPath)},
+            {"l", new Operator(AddLine)},
+	        {"Td", new Operator(TextMove)},
+            {"w", new Operator(SetLineWidth)},
+            {"re", new Operator(AddRectangle)},
         };
 
         /// <summary>
@@ -293,8 +302,8 @@ namespace PdfCS
         }
 	
         /// <summary>
-        ///перемещает позицию текста
-	///
+        /// перемещает позицию текста
+	    ///
         /// tx ty Td
         /// операнды tx ty берутся из стека операндов #52
         /// создается матрица перемещения Mt #50
@@ -310,7 +319,7 @@ namespace PdfCS
             currentState.textMatrix = Mt.Mult(currentState.textMatrix);
         }
 
-	/// <summary>
+	    /// <summary>
         /// выводит строку текста
         /// 
         /// операнд - строка (тип char[])
@@ -342,13 +351,13 @@ namespace PdfCS
                 new SolidBrush(Color.Black), (int)x, (int)y);
         }
 
-	/// <summary>
-	///   начало пути
-	///
-	/// x y m
-	/// начинает новый путь с точки x, y
-	/// предыдущий путь не сохраняется
-	/// </summary>
+	    /// <summary>
+	    /// начало пути
+	    ///
+	    /// x y m
+	    /// начинает новый путь с точки x, y
+	    /// предыдущий путь не сохраняется
+	    /// </summary>
         private static void BeginPath()
         {
             var y = (int)operands.Pop();
@@ -358,20 +367,61 @@ namespace PdfCS
             currentPath.segments = new List<Segment>();
         }
 
-	/// <summary>
-	///   добавление прямой линии
-	///
-	/// x y l
-	/// добавляет сегмент прямой линии в текущий путь
-	/// </summary>
+	    /// <summary>
+	    /// добавление прямой линии
+	    ///
+	    /// x y l
+	    /// добавляет сегмент прямой линии в текущий путь
+	    /// </summary>
         private static void AddLine()
         {
             var y = (int)operands.Pop();
             var x = (int)operands.Pop();
 
-	    if (currentPath.segments == null)
-		currentPath.segments = new List<Segment>();
+	        if (currentPath.segments == null)
+		        currentPath.segments = new List<Segment>();
             currentPath.segments.Add(new Segment { pointTo = new Point(x, y) });
+        }
+
+        /// <summary>
+        /// Устанавливает ширину линии для текущего состояния
+        /// lineWidth w
+        /// </summary>
+        private static void SetLineWidth()
+        {
+            currentState.lineWidth = (double)operands.Pop();
+        }
+
+        /// <summary>
+        /// Добавляет прямоугольник в текущий путь
+        /// x y width height re
+        /// </summary>
+        private static void AddRectangle()
+        {
+            var height = (double)operands.Pop();
+            var width = (double)operands.Pop();
+            var y = (double)operands.Pop();
+            var x = (double)operands.Pop();
+
+            operands.Push(x);
+            operands.Push(y);
+            BeginPath();
+            operands.Push(x + width);
+            operands.Push(y);
+            AddLine();
+            operands.Push(x + width);
+            operands.Push(y + height);
+            AddLine();
+            operands.Push(x);
+            operands.Push(y + height);
+            AddLine();
+            ClosePath();
+        }
+
+
+        private static void ClosePath()
+        {
+
         }
     }
 }
