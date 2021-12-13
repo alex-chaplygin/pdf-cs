@@ -67,6 +67,21 @@ namespace PdfCS
             /// ширина 0 соответствует 1 pixel на экране
             /// </summary>
             public double lineWidth;
+
+            /// <summary>
+            /// Расстояние между строк
+            /// </summary>
+            public double leading;
+
+            /// <summary>
+            /// Текущая координата по x
+            /// </summary>
+            public double textX;
+
+            /// <summary>
+            /// Текущая координата по y
+            /// </summary>
+            public double textY;
         }
 
         /// <summary>
@@ -86,7 +101,7 @@ namespace PdfCS
             public double urx;
             public double ury;
 
-	        public Rectangle(double llx, double lly, double urx, double ury)
+	    public Rectangle(double llx, double lly, double urx, double ury)
             {
                 this.llx = llx;
                 this.lly = lly;
@@ -143,6 +158,8 @@ namespace PdfCS
 	        {"Td", new Operator(TextMove)},
             {"w", new Operator(SetLineWidth)},
             {"re", new Operator(AddRectangle)},
+            {"T*", new Operator(NextLine)},
+            {"TJ", new Operator(ShowStrings)},
         };
 
         /// <summary>
@@ -309,7 +326,7 @@ namespace PdfCS
             currentState.textMatrix = Mt.Mult(currentState.textMatrix);
         }
 
-	    /// <summary>
+	/// <summary>
         /// выводит строку текста
         /// 
         /// операнд - строка (тип char[])
@@ -410,6 +427,37 @@ namespace PdfCS
         private static void ClosePath()
         {
 
+        }
+
+        /// <summary>
+        /// Перемещает позицию вывода текста на следующую строку.
+        /// В структуре состояния параметр называется double leading.
+        /// Вызвать команду 0, -leading, Td #56
+        /// </summary>
+        private static void NextLine()
+        {
+            operands.Push(0);
+            operands.Push(-currentState.leading);
+            TextMove();
+	}
+
+        /// Отображает одну или более строк.
+        /// Параметр массив, каждый элемент массива строка или число.
+        /// Если элемент строка, то отображается строка используя #57
+        /// Если число, то позиция текста смещается на указанное число x/1000, это число должно быть вычтено из текущей горизонтальной координаты.
+        /// </summary>
+        private static void ShowStrings()
+        {
+            foreach (object x in operands)
+            {
+                if (x is string)
+                {
+                    operands.Push(x);
+                    ShowText();
+                }
+                if (x is double)
+                    currentState.textX += (double)x/1000;
+            }
         }
     }
 }
