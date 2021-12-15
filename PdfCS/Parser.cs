@@ -500,16 +500,18 @@ namespace PdfCS
         {
 	    Dictionary<string, object> dictionary = new Dictionary<string, object>();
 	    NextChar();
-            while (stream.Position < stream.Length)
+	    while (true)
             {
-                string key = ReadNameObject();
-                object value = ReadToken();
-                if (value.ToString() == ">>")
+                object key = ReadToken();
+                if (key is char && (char)key == '\uffff')
+                    break;
+                if (key is string && key.ToString() == ">>")
                     return dictionary;
-                else if (value != null)
-                    dictionary.Add(key, value);
+                object value = ReadToken();
+                if (value != null)
+                    dictionary.Add(key.ToString(), value);
             }
-            return dictionary;
+            throw new Exception("ReadDictionary завершился без закрывающих скобок");
         }
 
 	/// <summary>
