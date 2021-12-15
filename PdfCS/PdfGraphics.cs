@@ -152,10 +152,12 @@ namespace PdfCS
             {"q",  new Operator(PushState)},
             {"Q",  new Operator(PopState)},
             {"Tf", new Operator(SelectFont)},
-	        {"Tj", new Operator(ShowText)},
+	    {"Tj", new Operator(ShowText)},
             {"m", new Operator(BeginPath)},
             {"l", new Operator(AddLine)},
-	        {"Td", new Operator(TextMove)},
+	    {"Td", new Operator(TextMove)},
+	    {"TL", new Operator(SetLeading)},
+            {"TD", new Operator(TextMoveLeading)},
             {"w", new Operator(SetLineWidth)},
             {"re", new Operator(AddRectangle)},
             {"T*", new Operator(NextLine)},
@@ -328,6 +330,26 @@ namespace PdfCS
         }
 
 	/// <summary>
+        /// установка расстояния между строками
+        /// leading TL
+        /// </summary>
+        static void SetLeading()
+        {
+            currentState.leading = (double)operands.Pop();
+        }
+
+        /// <summary>
+        /// установить leading как -ty
+        ///перемещение позиции текста tx ty
+        ///tx ty TD
+        /// </summary>
+        static void TextMoveLeading()
+        {
+            currentState.leading = -(int)operands.Peek();
+            TextMove();
+        }
+	
+	/// <summary>
         /// выводит строку текста
         /// 
         /// операнд - строка (тип char[])
@@ -455,16 +477,19 @@ namespace PdfCS
 
         /// <summary>
         /// Перемещает позицию вывода текста на следующую строку.
+	///
+	/// T*
         /// В структуре состояния параметр называется double leading.
         /// Вызвать команду 0, -leading, Td #56
         /// </summary>
         private static void NextLine()
         {
-            operands.Push(0);
-            operands.Push(-currentState.leading);
+            operands.Push((int)0);
+            operands.Push((int)-currentState.leading);
             TextMove();
 	}
 
+        /// <summary>
         /// Отображает одну или более строк.
         /// Параметр массив, каждый элемент массива строка или число.
         /// Если элемент строка, то отображается строка используя #57
@@ -474,7 +499,7 @@ namespace PdfCS
         {
             foreach (object x in operands)
             {
-                if (x is string)
+                if (x is char[])
                 {
                     operands.Push(x);
                     ShowText();
