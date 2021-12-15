@@ -163,6 +163,7 @@ namespace PdfCS
             {"T*", new Operator(NextLine)},
             {"TJ", new Operator(ShowStrings)},
             {"S", new Operator(StrokePath)},
+            {"'",  new Operator(MoveAndShowText)}
         };
 
         /// <summary>
@@ -381,13 +382,25 @@ namespace PdfCS
                 new SolidBrush(Color.Black), (int)x, (int)y);
         }
 
-	    /// <summary>
-	    /// начало пути
-	    ///
-	    /// x y m
-	    /// начинает новый путь с точки x, y
-	    /// предыдущий путь не сохраняется
-	    /// </summary>
+        /// <summary>
+	/// (строка) '
+        /// Параметр - string. Берется из стека операндов.
+        /// Перемещается на следующую строчку #60
+        /// Выводит строку #57
+        /// </summary>
+        private static void MoveAndShowText()
+        {
+            NextLine();
+            ShowText();
+        }
+
+        /// <summary>
+        /// начало пути
+        ///
+        /// x y m
+        /// начинает новый путь с точки x, y
+        /// предыдущий путь не сохраняется
+        /// </summary>
         private static void BeginPath()
         {
             var y = (int)operands.Pop();
