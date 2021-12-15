@@ -133,7 +133,7 @@ namespace PdfCS
         /// <summary>
         /// Первая точка пути
         /// </summary>
-        private static Point pathFirstPoint;
+        private static PointF pathFirstPoint;
 
         /// <summary>
         /// функция оператора графики
@@ -177,7 +177,7 @@ namespace PdfCS
             currentState.beginText = false;
             graphics = g;
             mediaBox = r;
-	    operands = new Stack<object>();
+	        operands = new Stack<object>();
         }
 
         /// <summary>
@@ -201,7 +201,7 @@ namespace PdfCS
                 throw new Exception("Текстовый объект уже создан");
             currentState.textMatrix = new Matrix();
             currentState.beginText = true;
-	    currentState.textFont = "Arial";
+	        currentState.textFont = "Arial";
             currentState.textRise = 0;
             currentState.horizontalScale = 1.0;
         }
@@ -367,10 +367,10 @@ namespace PdfCS
 	    /// </summary>
         private static void BeginPath()
         {
-            var y = (int)operands.Pop();
-            var x = (int)operands.Pop();
+            var y = (float)operands.Pop();
+            var x = (float)operands.Pop();
 
-            pathFirstPoint = new Point(x, y);
+            pathFirstPoint = new PointF(x, y);
             currentPath = new GraphicsPath();
         }
 
@@ -382,10 +382,11 @@ namespace PdfCS
 	    /// </summary>
         private static void AddLine()
         {
-            var y = (int)operands.Pop();
-            var x = (int)operands.Pop();
+            var y = (float)operands.Pop();
+            var x = (float)operands.Pop();
+            PointF lastPoint = currentPath.GetLastPoint();
 
-            currentPath.AddLine(currentPath.GetLastPoint(), new Point(x, y));
+            currentPath.AddLine((lastPoint != null) ? lastPoint : pathFirstPoint, new PointF(x, y));
         }
 
         /// <summary>
