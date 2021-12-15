@@ -125,25 +125,15 @@ namespace PdfCS
         /// </summary>
         private static Rectangle mediaBox;
 
-	    /// <summary>
-	    ///   структура текущего пути
-	    /// </summary>
-        private struct CurrentPath
-        {
-            /// <summary>
-            /// Начало пути 
-            /// </summary>
-            public Point begin;
-            /// <summary>
-            /// Список участков пути
-            /// </summary>
-            public List<Segment> segments;
-        }
-
         /// <summary>
         /// Текущий путь
         /// </summary>
-        private static CurrentPath currentPath;
+        private static GraphicsPath currentPath;
+
+        /// <summary>
+        /// Первая точка пути
+        /// </summary>
+        private static Point pathFirstPoint;
 
         /// <summary>
         /// функция оператора графики
@@ -162,10 +152,10 @@ namespace PdfCS
             {"q",  new Operator(PushState)},
             {"Q",  new Operator(PopState)},
             {"Tf", new Operator(SelectFont)},
-	    {"Tj", new Operator(ShowText)},
+	        {"Tj", new Operator(ShowText)},
             {"m", new Operator(BeginPath)},
             {"l", new Operator(AddLine)},
-	    {"Td", new Operator(TextMove)},
+	        {"Td", new Operator(TextMove)},
             {"w", new Operator(SetLineWidth)},
             {"re", new Operator(AddRectangle)},
             {"T*", new Operator(NextLine)},
@@ -380,8 +370,8 @@ namespace PdfCS
             var y = (int)operands.Pop();
             var x = (int)operands.Pop();
 
-            currentPath.begin = new Point(x, y);
-            currentPath.segments = new List<Segment>();
+            pathFirstPoint = new Point(x, y);
+            currentPath = new GraphicsPath();
         }
 
 	    /// <summary>
@@ -395,9 +385,7 @@ namespace PdfCS
             var y = (int)operands.Pop();
             var x = (int)operands.Pop();
 
-	    if (currentPath.segments == null)
-		currentPath.segments = new List<Segment>();
-            currentPath.segments.Add(new Segment { pointTo = new Point(x, y) });
+            currentPath.AddLine(currentPath.GetLastPoint(), new Point(x, y));
         }
 
         /// <summary>
