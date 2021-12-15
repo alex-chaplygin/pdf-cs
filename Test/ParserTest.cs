@@ -387,5 +387,46 @@ namespace PDFTest
 	    int t = (int)ReadToken("0 6 0003 65535 f 00017 000");
 	    Assert.AreEqual(t, 0);
 	}	
+
+		[TestMethod]
+		public void ReadDictionaryTest()
+		{
+			Dictionary<string, object> dict = (Dictionary<string, object>)ReadToken("<<" +
+			"/Type /Example" +
+			"/Subtype /DictionaryExample" +
+			"/Version 0.01" +
+			"/IntegerItem 12" +
+			"/StringItem (a string)" +
+			"/Subdictionary" +
+			"<<" +
+			"/Item1 0.4" +
+			"/Item2 true" +
+			"/LastItem (not!)" +
+			"/VeryLastItem (OK)" + ">>" + ">>");
+			Assert.AreEqual((string)dict["Type"], "Example");
+			Assert.AreEqual((string)dict["Subtype"], "DictionaryExample");
+			Assert.AreEqual((double)dict["Version"], 0.01);
+			Assert.AreEqual((int)dict["IntegerItem"], 12);
+			CollectionAssert.AreEqual((char[])dict["StringItem"], "a string".ToCharArray());
+			Assert.AreEqual((double)((Dictionary<string, object>)dict["Subdictionary"])["Item1"], 0.4);
+			Assert.AreEqual((bool)((Dictionary<string, object>)dict["Subdictionary"])["Item2"], true);
+			CollectionAssert.AreEqual((char[])((Dictionary<string, object>)dict["Subdictionary"])["LastItem"], "not!".ToCharArray());
+			CollectionAssert.AreEqual((char[])((Dictionary<string, object>)dict["Subdictionary"])["VeryLastItem"], "OK".ToCharArray());
+		}
+	
+        [TestMethod]
+        public void ReadDictionaryErrorTest()
+        {
+            try
+            {
+                Dictionary<string, object> dict = (Dictionary<string, object>)ReadToken("<</Type /Example");
+                Assert.AreEqual((string)dict["Type"], "Example");
+                Assert.Fail();
+            }
+            catch (Exception ex)
+            {
+                Assert.AreEqual(ex.Message, "ReadDictionary завершился без закрывающих скобок");
+            }
+        }
     }
 }
