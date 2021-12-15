@@ -133,7 +133,7 @@ namespace PdfCS
         /// <summary>
         /// Первая точка пути
         /// </summary>
-        private static Point pathFirstPoint;
+        private static PointF pathFirstPoint;
 
         /// <summary>
         /// функция оператора графики
@@ -160,6 +160,7 @@ namespace PdfCS
             {"re", new Operator(AddRectangle)},
             {"T*", new Operator(NextLine)},
             {"TJ", new Operator(ShowStrings)},
+            {"S", new Operator(StrokePath)},
         };
 
         /// <summary>
@@ -177,7 +178,7 @@ namespace PdfCS
             currentState.beginText = false;
             graphics = g;
             mediaBox = r;
-	    operands = new Stack<object>();
+	        operands = new Stack<object>();
         }
 
         /// <summary>
@@ -201,7 +202,7 @@ namespace PdfCS
                 throw new Exception("Текстовый объект уже создан");
             currentState.textMatrix = new Matrix();
             currentState.beginText = true;
-	    currentState.textFont = "Arial";
+	        currentState.textFont = "Arial";
             currentState.textRise = 0;
             currentState.horizontalScale = 1.0;
         }
@@ -369,8 +370,11 @@ namespace PdfCS
         {
             var y = (int)operands.Pop();
             var x = (int)operands.Pop();
+            double ox;
+            double oy;
 
-            pathFirstPoint = new Point(x, y);
+            currentState.CTM.MultVector(x, y, out ox, out oy);
+            pathFirstPoint = new PointF((float)ox, (float)oy);
             currentPath = new GraphicsPath();
         }
 
@@ -384,8 +388,20 @@ namespace PdfCS
         {
             var y = (int)operands.Pop();
             var x = (int)operands.Pop();
+            double ox;
+            double oy;
 
-            currentPath.AddLine(currentPath.GetLastPoint(), new Point(x, y));
+            currentState.CTM.MultVector(x, y, out ox, out oy);
+
+            PointF lastPoint;
+            try
+            {
+                lastPoint = currentPath.GetLastPoint();
+            } catch (Exception) {
+                lastPoint = pathFirstPoint;
+            }
+
+            currentPath.AddLine(lastPoint, new PointF((float)ox, (float)oy));
         }
 
         /// <summary>
@@ -403,10 +419,10 @@ namespace PdfCS
         /// </summary>
         private static void AddRectangle()
         {
-            var height = (double)operands.Pop();
-            var width = (double)operands.Pop();
-            var y = (double)operands.Pop();
-            var x = (double)operands.Pop();
+            var height = (int)operands.Pop();
+            var width = (int)operands.Pop();
+            var y = (int)operands.Pop();
+            var x = (int)operands.Pop();
 
             operands.Push(x);
             operands.Push(y);
@@ -427,6 +443,14 @@ namespace PdfCS
         private static void ClosePath()
         {
 
+        }
+
+        /// <summary>
+        /// Добавляет обводку к текущему пути
+        /// </summary>
+        private static void StrokePath()
+        {
+            graphics.DrawPath(new Pen(Color.Black) { Width = (float)(currentState.lineWidth * currentState.CTM.GetValues()[0]) }, currentPath);
         }
 
         /// <summary>
