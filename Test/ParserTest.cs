@@ -132,9 +132,10 @@ namespace PDFTest
 	}
 
 	[TestMethod]
-	public void ErrorStreamObject()
+	public void TestStreamObject()
 	{
-	    ReadIndirectObjectTest("10 0 obj <5 5>> stream endobj", null);
+	    ReadIndirectObjectTest("11 0 obj <</Length 5>> stream\n23145\nendstream endobj", 
+				   new byte[] {(byte)'2', (byte)'3', (byte)'1', (byte)'4', (byte)'5' });
 	}
 
 	public void ReadIndirectObjectTest(string str, object obj)
@@ -149,7 +150,10 @@ namespace PDFTest
 	    Parser p = new Parser(m);
 	    p.NextChar();
 	    object o2 = p.ReadIndirectObject(out dict);
-	    Assert.AreEqual(o2, obj);
+	    if (obj is byte[])
+		CollectionAssert.AreEqual((byte[])o2, (byte[])obj);
+	    else
+		Assert.AreEqual(o2, obj);
 	}
 
 	[TestMethod]
