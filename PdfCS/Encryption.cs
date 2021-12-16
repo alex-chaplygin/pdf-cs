@@ -443,10 +443,31 @@ namespace PdfCS
             return result;
         }
 
-	static byte[] DecodeAES(byte[] data, byte[] key, byte[] initVec)
-	{
-	    return data;
-	}
+	/// <summary>
+        /// Декодирование AES
+        /// </summary>
+        /// <param name="data">зашифрованные данные</param>
+        /// <param name="Key">ключ шифрования</param>
+        /// <param name="IV">Вектор инициализации</param>
+        /// <returns>возвращает дешифрованные данные</returns>
+        private static byte[] DecodeAES(byte[] data, byte[] Key, byte[] IV)
+        {
+            using (Aes alg = Aes.Create())
+            {
+                alg.Key = Key;
+                alg.IV = IV;
+
+                ICryptoTransform decryptor = alg.CreateDecryptor(alg.Key, alg.IV);
+
+                using (MemoryStream encoded = new MemoryStream(data))
+                    using (CryptoStream crypt = new CryptoStream(encoded, decryptor, CryptoStreamMode.Read))
+                    {
+                        byte[] decoded = new byte[crypt.Length];
+                        crypt.Read(decoded, 0, (int)crypt.Length);
+                        return decoded;
+                    }
+            }
+        }   
 
         /// <summary>
         /// заглушка
