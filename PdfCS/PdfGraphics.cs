@@ -42,7 +42,7 @@ namespace PdfCS
             /// <summary>
             /// Текущий размер шрифта
             /// </summary>
-            public int textFontSize;
+            public double textFontSize;
 
 	        /// <summary>
             /// имя шрифта
@@ -181,7 +181,8 @@ namespace PdfCS
             currentState.beginText = false;
             graphics = g;
             mediaBox = r;
-	        operands = new Stack<object>();
+	    operands = new Stack<object>();
+	    states = new Stack<State>();
         }
 
         /// <summary>
@@ -230,12 +231,12 @@ namespace PdfCS
         /// </summary>
         public static void SetMatrix()
         {
-            var f = (double)operands.Pop();
-            var e = (double)operands.Pop();
-            var d = (double)operands.Pop();
-            var c = (double)operands.Pop();
-            var b = (double)operands.Pop();
-            var a = (double)operands.Pop();
+            double f = ReadNumber();
+            double e = ReadNumber();
+            double d = ReadNumber();
+            double c = ReadNumber();
+            double b = ReadNumber();
+            double a = ReadNumber();
 
             Matrix matrix = new Matrix(a, b, c, d, e, f);
 
@@ -248,12 +249,12 @@ namespace PdfCS
         /// </summary>
         private static void SetTextMatrix()
         {
-            var f = (double)operands.Pop();
-            var e = (double)operands.Pop();
-            var d = (double)operands.Pop();
-            var c = (double)operands.Pop();
-            var b = (double)operands.Pop();
-            var a = (double)operands.Pop();
+            double f = ReadNumber();
+            double e = ReadNumber();
+            double d = ReadNumber();
+            double c = ReadNumber();
+            double b = ReadNumber();
+            double a = ReadNumber();
 
             currentState.textMatrix = new Matrix(a, b, c, d, e, f);
         }
@@ -286,7 +287,7 @@ namespace PdfCS
         /// </summary>
         private static void SelectFont()
         {
-            currentState.textFontSize = (int)operands.Pop();
+            currentState.textFontSize = ReadNumber();
             operands.Pop();
         }
 
@@ -323,8 +324,8 @@ namespace PdfCS
         /// </summary>
         private static void TextMove()
         {
-            var ty = (int)operands.Pop();
-            var tx = (int)operands.Pop();
+            double ty = ReadNumber();
+            double tx = ReadNumber();
             // Матрица перемещения
             Matrix Mt = new Matrix(1, 0, 0, 1, tx, ty);
             currentState.textMatrix = Mt.Mult(currentState.textMatrix);
@@ -336,7 +337,7 @@ namespace PdfCS
         /// </summary>
         static void SetLeading()
         {
-            currentState.leading = (double)operands.Pop();
+            currentState.leading = ReadNumber();
         }
 
         /// <summary>
@@ -346,7 +347,9 @@ namespace PdfCS
         /// </summary>
         static void TextMoveLeading()
         {
-            currentState.leading = -(int)operands.Peek();
+	    double num = ReadNumber();
+            currentState.leading = -num;
+	    operands.Push(num);
             TextMove();
         }
 	
@@ -378,7 +381,7 @@ namespace PdfCS
             Tr.MultVector(0, 0, out x, out y);
 
             graphics.DrawString(String.Concat<char>(array), new Font(currentState.textFont,
-                (int)Math.Abs(currentState.textFontSize * currentState.CTM.GetValues()[3])),
+	        (float)Math.Abs(currentState.textFontSize * currentState.CTM.GetValues()[3])),
                 new SolidBrush(Color.Black), (int)x, (int)y);
         }
 
@@ -403,8 +406,8 @@ namespace PdfCS
         /// </summary>
         private static void BeginPath()
         {
-            var y = (int)operands.Pop();
-            var x = (int)operands.Pop();
+            double y = ReadNumber();
+            double x = ReadNumber();
             double ox;
             double oy;
 
@@ -421,8 +424,8 @@ namespace PdfCS
 	    /// </summary>
         private static void AddLine()
         {
-            var y = (int)operands.Pop();
-            var x = (int)operands.Pop();
+            double y = ReadNumber();
+            double x = ReadNumber();
             double ox;
             double oy;
 
@@ -435,7 +438,8 @@ namespace PdfCS
             } catch (Exception) {
                 lastPoint = pathFirstPoint;
             }
-
+	    if (currentPath == null)
+		currentPath = new GraphicsPath();
             currentPath.AddLine(lastPoint, new PointF((float)ox, (float)oy));
         }
 
@@ -445,7 +449,7 @@ namespace PdfCS
         /// </summary>
         private static void SetLineWidth()
         {
-            currentState.lineWidth = (double)operands.Pop();
+            currentState.lineWidth = ReadNumber();
         }
 
         /// <summary>
@@ -454,10 +458,10 @@ namespace PdfCS
         /// </summary>
         private static void AddRectangle()
         {
-            var height = (int)operands.Pop();
-            var width = (int)operands.Pop();
-            var y = (int)operands.Pop();
-            var x = (int)operands.Pop();
+            double height = ReadNumber();
+            double width = ReadNumber();
+            double y = ReadNumber();
+            double x = ReadNumber();
 
             operands.Push(x);
             operands.Push(y);
@@ -497,8 +501,8 @@ namespace PdfCS
         /// </summary>
         private static void NextLine()
         {
-            operands.Push((int)0);
-            operands.Push((int)-currentState.leading);
+            operands.Push(0);
+            operands.Push(-currentState.leading);
             TextMove();
 	}
 
@@ -520,6 +524,15 @@ namespace PdfCS
                 if (x is double)
                     currentState.textX += (double)x/1000;
             }
+        }
+
+	/// <summary>
+        /// Cчитывает число (целое или вещественное) из стека операндов и преобразует его в double
+        /// </summary>
+        /// /// <returns> Вещественное число из стека операндов </returns> 
+        private static double ReadNumber()
+        {
+	    return Convert.ToDouble(operands.Pop());
         }
     }
 }
