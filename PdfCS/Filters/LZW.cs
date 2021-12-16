@@ -106,12 +106,11 @@ namespace PdfCS
 
 	private static void InitParams(Dictionary<string, object> p)
 	{
-	    predictor = p.ContainsKey("Predictor") ? (int)p["Predictor"] : 1;
-	    colors = p.ContainsKey("Colors") ? (int)p["Colors"] : 1;
-	    bpp = p.ContainsKey("BitsPerComponent") ? (int)p["BitsPerComponent"] : 8;
-	    if (p.ContainsKey("Columns"))
-		columns = (int)p["Columns"];
-	    early = p.ContainsKey("EarlyChange") ? (int)p["EarlyChange"] == 1 : true;
+	    predictor = p.ContainsKey("Predictor")        ? (int)p["Predictor"]        : 1;
+	    colors    = p.ContainsKey("Colors")           ? (int)p["Colors"]           : 1;
+	    bpp       = p.ContainsKey("BitsPerComponent") ? (int)p["BitsPerComponent"] : 8;
+		columns   = p.ContainsKey("Columns")          ? (int)p["Columns"]          : 1;
+	    early     = p.ContainsKey("EarlyChange")      ? (int)p["EarlyChange"] == 1 : true;
 	}
 
 	/// <summary>
