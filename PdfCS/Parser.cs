@@ -136,11 +136,18 @@ namespace PdfCS
 	    if (lastChar == 't')
             {
                 string _true = "true";
+		long pos = stream.Position;
                 for (int i = 1; i < 5; i++)
+                {
                     if (lastChar == _true[i - 1])
                         NextChar();
                     else
-                        throw new Exception("Ошибка true Boolean");
+                    {
+                        stream.Seek(pos, SeekOrigin.Begin);
+                        lastChar = 't';
+                        return ReadKeyword();
+                    }
+                }
                 return true;
             }
             else if (lastChar == 'f')
