@@ -60,20 +60,6 @@ namespace PDFTest
 	}
 
 	[TestMethod]
-	public void TrueError()
-	{
-            try
-            {
-		TestToken("tru", typeof(bool), true);
-		Assert.Fail();
-	    }
-	    catch(Exception ex)
-            {
-		Assert.AreEqual(ex.Message, "Ошибка true Boolean");
-            }
-	}
-
-	[TestMethod]
 	public void ErrorNumObject()
 	{
 	    try
