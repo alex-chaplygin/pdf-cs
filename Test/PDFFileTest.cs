@@ -36,8 +36,14 @@ namespace PDFTest
             "0000000081 00000 n\n" +
             "0000000000 00007 f\n" +
             "0000000331 00000 n\n" +
-            "0000000409 00000 n\n";
-
+            "0000000409 00000 n\n" +
+		"trailer \n" +
+            "<< /Size 22 \n" +
+            "/Root 2 0 R \n" +
+            "/Info 1 0 R \n" +
+            "/ID[ <81b14aafa313db63dbd6f981e49f94f4> \n" +
+            "<81b14aafa313db63dbd6f981e49f94f4> ] \n" +
+            ">> \n";
             PDFFile.XRefEntry[] table = new PDFFile.XRefEntry[]
             {
                 new PDFFile.XRefEntry(0, 0, true),
@@ -48,6 +54,8 @@ namespace PDFTest
                 new PDFFile.XRefEntry(409, 0, false),
             };
             Test(s, table);
+	    Assert.AreEqual(PDFFile.root.Item1, 2);
+            Assert.AreEqual(PDFFile.info.Item1, 1);
         }
 	
         [TestMethod]
@@ -62,8 +70,14 @@ namespace PDFTest
             "0000025518 00002 n\n" +
             "0000025635 00000 n\n" +
             "30 1\n" +
-            "0000025777 00000 n\n";
-          
+            "0000025777 00000 n\n" +
+		"trailer \n" +
+            "<< /Size 22 \n" +
+            "/Root 2 0 R \n" +
+            "/Info 1 0 R \n" +
+            "/ID[ <81b14aafa313db63dbd6f981e49f94f4> \n" +
+            "<81b14aafa313db63dbd6f981e49f94f4> ] \n" +
+            ">> \n";          
             PDFFile.XRefEntry[] table = new PDFFile.XRefEntry[]
              {
                 new PDFFile.XRefEntry(0, 0, true),
@@ -104,7 +118,7 @@ namespace PDFTest
 	[TestMethod]
         public void OpenTest()
         {
-            string path = "test.pdf";
+            string path = "pdfs/test.pdf";
             Assert.IsTrue(File.Exists(path));
 
             FileStream fileStream = File.OpenRead(path);

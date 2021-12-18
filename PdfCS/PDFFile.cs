@@ -226,7 +226,7 @@ namespace PdfCS
             long position;
             position = stream.Position; //запоминаем позицию потока
             object o = parser.ReadToken();
-//            Console.WriteLine(o.ToString());
+            Console.WriteLine(o.ToString());
             if (o is int) 
             {
                 stream.Seek(position, SeekOrigin.Begin); //возвращаем позицию потока назад
@@ -238,13 +238,13 @@ namespace PdfCS
                 o = parser.ReadToken();
                 if (o is char && (char)o == '\uffff')
                     break;
-    //            Console.WriteLine(o.ToString());
+//                Console.WriteLine(o.ToString());
                 if (o is string && (string)o == "trailer")
                     break;
                 int first = (int)o; //читаем номер первого объекта
   //              Console.WriteLine($"first = {first}");
                 int count = (int)parser.ReadToken(); //читаем количество объектов
-//                Console.WriteLine($"count = {count}");
+    //            Console.WriteLine($"count = {count}");
                 if (xrefTable == null)
                     xrefTable = new XRefEntry[first + count];
                 else
@@ -268,7 +268,7 @@ namespace PdfCS
                         xrefTable[index].free = true;
                 }
             }
-            //ReadTrailer();
+            ReadTrailer();
         }
 
 	/// <summary>
