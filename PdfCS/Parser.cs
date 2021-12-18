@@ -236,16 +236,15 @@ namespace PdfCS
                 str += lastChar;
                 NextChar();
             }
-            str = str.Replace('.', ',');
-	    if (str.IndexOf(",") < 0)
-		if (int.TryParse(str, out resi))
-		    return resi;
-		else
-		    throw new Exception("Ошибка в целом числе");
-	    else if (double.TryParse(str, out resd))
-		return resd;
-	    else
-		throw new Exception("Ошибка в вещественном числе");
+	        if (str.IndexOf(".") < 0)
+		        if (int.TryParse(str, out resi))
+		            return resi;
+		        else
+		            throw new Exception("Ошибка в целом числе");
+	        else if (double.TryParse(str, out resd))
+		        return resd;
+	        else
+		        throw new Exception("Ошибка в вещественном числе");
         }
 
 	/// <summary>

@@ -163,6 +163,8 @@ namespace PdfCS
             {"T*", new Operator(NextLine)},
             {"TJ", new Operator(ShowStrings)},
             {"S", new Operator(StrokePath)},
+            {"f", new Operator(FillPath)},
+            {"F", new Operator(FillPath)},
             {"'",  new Operator(MoveAndShowText)}
         };
 
@@ -386,7 +388,7 @@ namespace PdfCS
         }
 
         /// <summary>
-	/// (строка) '
+	    /// (строка) '
         /// Параметр - string. Берется из стека операндов.
         /// Перемещается на следующую строчку #60
         /// Выводит строку #57
@@ -410,8 +412,8 @@ namespace PdfCS
             double x = ReadNumber();
             double ox;
             double oy;
-
             currentState.CTM.MultVector(x, y, out ox, out oy);
+
             pathFirstPoint = new PointF((float)ox, (float)oy);
             currentPath = new GraphicsPath();
         }
@@ -428,7 +430,6 @@ namespace PdfCS
             double x = ReadNumber();
             double ox;
             double oy;
-
             currentState.CTM.MultVector(x, y, out ox, out oy);
 
             PointF lastPoint;
@@ -438,8 +439,8 @@ namespace PdfCS
             } catch (Exception) {
                 lastPoint = pathFirstPoint;
             }
-	    if (currentPath == null)
-		currentPath = new GraphicsPath();
+	        if (currentPath == null)
+		        currentPath = new GraphicsPath();
             currentPath.AddLine(lastPoint, new PointF((float)ox, (float)oy));
         }
 
@@ -485,6 +486,16 @@ namespace PdfCS
         }
 
         /// <summary>
+        /// Заполнение текущего пути
+        /// </summary>
+        private static void FillPath()
+        {
+            ClosePath();
+            currentPath.FillMode = FillMode.Winding;
+            graphics.FillPath(Brushes.Red, currentPath);
+        }
+
+        /// <summary>
         /// Добавляет обводку к текущему пути
         /// </summary>
         private static void StrokePath()
@@ -494,8 +505,8 @@ namespace PdfCS
 
         /// <summary>
         /// Перемещает позицию вывода текста на следующую строку.
-	///
-	/// T*
+	    ///
+	    /// T*
         /// В структуре состояния параметр называется double leading.
         /// Вызвать команду 0, -leading, Td #56
         /// </summary>
@@ -504,7 +515,7 @@ namespace PdfCS
             operands.Push(0);
             operands.Push(-currentState.leading);
             TextMove();
-	}
+	    }
 
         /// <summary>
         /// Отображает одну или более строк.
@@ -526,13 +537,13 @@ namespace PdfCS
             }
         }
 
-	/// <summary>
+	    /// <summary>
         /// Cчитывает число (целое или вещественное) из стека операндов и преобразует его в double
         /// </summary>
-        /// /// <returns> Вещественное число из стека операндов </returns> 
+        /// <returns> Вещественное число из стека операндов </returns> 
         private static double ReadNumber()
         {
-	    return Convert.ToDouble(operands.Pop());
+            return Convert.ToDouble(operands.Pop());
         }
     }
 }
