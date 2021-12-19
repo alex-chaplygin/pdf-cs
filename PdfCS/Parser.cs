@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using System.Globalization;
 
 namespace PdfCS
 {
@@ -241,7 +242,7 @@ namespace PdfCS
 		            return resi;
 		        else
 		            throw new Exception("Ошибка в целом числе");
-	        else if (double.TryParse(str, out resd))
+	        else if (double.TryParse(str, NumberStyles.Any, CultureInfo.InvariantCulture, out resd))
 		        return resd;
 	        else
 		        throw new Exception("Ошибка в вещественном числе");

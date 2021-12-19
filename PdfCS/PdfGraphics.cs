@@ -136,6 +136,11 @@ namespace PdfCS
         private static PointF pathFirstPoint;
 
         /// <summary>
+        /// Цвет заполнения пути
+        /// </summary>
+        private static Color fillColor;
+
+        /// <summary>
         /// функция оператора графики
         /// </summary>
         private delegate void Operator();
@@ -183,8 +188,9 @@ namespace PdfCS
             currentState.beginText = false;
             graphics = g;
             mediaBox = r;
-	    operands = new Stack<object>();
-	    states = new Stack<State>();
+	        operands = new Stack<object>();
+	        states = new Stack<State>();
+            fillColor = Color.Black;
         }
 
         /// <summary>
@@ -492,7 +498,7 @@ namespace PdfCS
         {
             ClosePath();
             currentPath.FillMode = FillMode.Winding;
-            graphics.FillPath(Brushes.Red, currentPath);
+            graphics.FillPath(new SolidBrush(fillColor), currentPath);
         }
 
         /// <summary>
