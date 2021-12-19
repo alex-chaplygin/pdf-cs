@@ -194,6 +194,7 @@ namespace PdfCS
         {
             currentState.beginText = false;
             currentState.fillColor = Color.Black;
+            currentState.strokeColor = Color.Black;
             graphics = g;
             mediaBox = r;
 	        operands = new Stack<object>();
