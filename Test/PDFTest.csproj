@@ -19,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="FontEncodingTest.cs" />
     <Compile Include="ParserTest.cs" />
     <Compile Include="BitReaderTest.cs" />
     <Compile Include="RunLengthTest.cs" />
