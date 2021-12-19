@@ -101,6 +101,36 @@ namespace PdfCS
         private static byte[] encryptionKey;
 
         private static byte[] id0;
+
+	/// <summary>
+        /// Имя фильтра
+        /// </summary>
+        private static string Filter = "Standard";
+
+        /// <summary>
+        /// Имя другого фильтра
+        /// </summary>
+        private static string SubFilter;
+
+        /// <summary>
+        /// Cловарь фильтров Crypt
+        /// </summary>
+        private static Dictionary<string, object> CF;
+
+        /// <summary>
+        /// Имя фильтра для шифрования потоков
+        /// </summary>
+        private static string StmF = "Identity";
+
+        /// <summary>
+        /// Имя фильтра для шифрования строк
+        /// </summary>
+        private static string StrF = "Identity";
+
+        /// <summary>
+        /// Имя фильтра для шифрования встроенных файловых потоков
+        /// </summary>
+        private static string EFF;
 	
         /// <summary>
         /// Аутентификация владельца
@@ -181,9 +211,57 @@ namespace PdfCS
             return RC4.Decode(data, key);
         }
 
-	public static void Init(Dictionary<string, object> encrypt, object[] id)
-	{
-	}
+	/// <summary>
+        /// Инициализирует шифрование.
+        /// Метод static void Init(Dictionary<string, object> encrypt, object[] id) инициализирует шифрование
+        /// encrypt - словарь из хвоста документа
+        /// id - массив из двух байтовых строк byte[]
+        /// 
+        /// Поля словаря:
+        /// Filter - имя фильтра(Standard - стандарный фильтр с паролями)
+        /// SubFilter(необязательный) - имя другого фильтра(вместо Filter)
+        /// V - код алгоритма
+        /// 0 - невозможное значение
+        /// 1 - RC4 или AES длина ключа меньше 40 бит
+        /// 2- RC4 или AES длина ключа больше 40 бит
+        /// 3 - невозможное значение
+        /// 4 - определяется полями CF, StmF, StrF
+        /// Length(необязательно) - длина ключа(от 40 до 128), по умолчанию - 40
+        /// CF(необязательно) - словарь фильтров Crypt
+        /// StmF(необязательно) - имя фильтра для потоков(ключ в CF), по-умолчанию - Identity
+        /// StrF(необязательно) - имя фильтра для строк(ключ в CF), по-умолчанию - Identity
+        /// EFF(необязательно) - имя фильтра для встроенных файлов(ключ в CF)
+        /// Если имя Filter = Standard то инициализируем стандартный фильтр #41
+        /// <summary>
+        public static void Init(Dictionary<string, object> encrypt, object[] id)
+        {
+            Filter = (string)encrypt["Filter"];
+	    
+            V = (int)encrypt["V"];
+            if (encrypt.ContainsKey("SubFilter"))
+                SubFilter = (string)encrypt["SubFilter"];
+            if (encrypt.ContainsKey("Length"))
+                Length = (int)encrypt["Length"];
+
+            if (encrypt.ContainsKey("CF"))
+            {
+                CF = (Dictionary<string, object>)encrypt["CF"];
+                if (CF.ContainsKey("StmF"))
+                    StmF = (string)CF["StmF"];
+                if (CF.ContainsKey("StrF"))
+                    StrF = (string)CF["StrF"];
+                if (CF.ContainsKey("EFF"))
+                    EFF = (string)CF["EFF"];
+            }
+
+            if ((V == 0) || (V == 3))
+                throw new Exception("Невозможное значение кода алгоритма.");
+            if ((Length < 40) || (Length > 128))
+                throw new Exception("Неверная длина ключа.");
+
+            if (Filter == "Standard") InitStandardFilter(encrypt);
+            else throw new Exception("Неизвестный фильтр.");
+        }
 
         /// <summary>
         /// Инициализирует параметры стандартного фильтра дешифрования.
