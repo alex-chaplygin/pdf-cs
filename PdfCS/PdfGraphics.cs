@@ -549,7 +549,8 @@ namespace PdfCS
         /// </summary>
         private static void ShowStrings()
         {
-            foreach (object x in operands)
+            object[] temp = (object[])operands.Pop(); 
+            foreach (object x in temp)
             {
                 if (x is char[])
                 {
