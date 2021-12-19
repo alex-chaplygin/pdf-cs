@@ -82,6 +82,11 @@ namespace PdfCS
             /// Текущая координата по y
             /// </summary>
             public double textY;
+
+            /// <summary>
+            /// Цвет заполнения пути
+            /// </summary>
+            private static Color fillColor;
         }
 
         /// <summary>
@@ -134,11 +139,6 @@ namespace PdfCS
         /// Первая точка пути
         /// </summary>
         private static PointF pathFirstPoint;
-
-        /// <summary>
-        /// Цвет заполнения пути
-        /// </summary>
-        private static Color fillColor;
 
         /// <summary>
         /// функция оператора графики
