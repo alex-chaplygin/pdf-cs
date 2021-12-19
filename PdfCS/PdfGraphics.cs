@@ -86,7 +86,7 @@ namespace PdfCS
             /// <summary>
             /// Цвет заполнения пути
             /// </summary>
-            private static Color fillColor;
+            public Color fillColor;
         }
 
         /// <summary>
@@ -186,11 +186,11 @@ namespace PdfCS
         public static void Init(Graphics g, Rectangle r)
         {
             currentState.beginText = false;
+            currentState.fillColor = Color.Black;
             graphics = g;
             mediaBox = r;
 	        operands = new Stack<object>();
 	        states = new Stack<State>();
-            fillColor = Color.Black;
         }
 
         /// <summary>
