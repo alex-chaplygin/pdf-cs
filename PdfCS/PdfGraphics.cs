@@ -87,6 +87,11 @@ namespace PdfCS
             /// Цвет заполнения пути
             /// </summary>
             public Color fillColor;
+
+            /// <summary>
+            /// Цвет обводки пути
+            /// </summary>
+            public Color strokeColor;
         }
 
         /// <summary>
@@ -168,6 +173,8 @@ namespace PdfCS
             {"T*", new Operator(NextLine)},
             {"TJ", new Operator(ShowStrings)},
             {"S", new Operator(StrokePath)},
+            {"SC", new Operator(SetStrokeColor)},
+            {"sc", new Operator(SetFillColor)},
             {"f", new Operator(FillPath)},
             {"F", new Operator(FillPath)},
             {"'",  new Operator(MoveAndShowText)}
@@ -491,6 +498,16 @@ namespace PdfCS
 
         }
 
+        private static void SetStrokeColor()
+        {
+            currentState.strokeColor = ReadRGBColor();
+        }
+
+        private static void SetFillColor()
+        {
+            currentState.fillColor = ReadRGBColor();
+        }
+
         /// <summary>
         /// Заполнение текущего пути
         /// </summary>
@@ -506,7 +523,7 @@ namespace PdfCS
         /// </summary>
         private static void StrokePath()
         {
-            graphics.DrawPath(new Pen(Color.Black) { Width = (float)(currentState.lineWidth * currentState.CTM.GetValues()[0]) }, currentPath);
+            graphics.DrawPath(new Pen(currentState.strokeColor) { Width = (float)(currentState.lineWidth * currentState.CTM.GetValues()[0]) }, currentPath);
         }
 
         /// <summary>
@@ -550,6 +567,17 @@ namespace PdfCS
         private static double ReadNumber()
         {
             return Convert.ToDouble(operands.Pop());
+        }
+
+        /// <summary>
+        /// Cчитывает цвет из стека операндов
+        /// </summary>
+        private static Color ReadRGBColor()
+        {
+            int b = (int)operands.Pop();
+            int g = (int)operands.Pop();
+            int r = (int)operands.Pop();
+            return Color.FromArgb(255, r, g, b);
         }
     }
 }
