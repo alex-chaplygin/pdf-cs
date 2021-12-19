@@ -498,7 +498,7 @@ namespace PdfCS
         {
             ClosePath();
             currentPath.FillMode = FillMode.Winding;
-            graphics.FillPath(new SolidBrush(fillColor), currentPath);
+            graphics.FillPath(new SolidBrush(currentState.fillColor), currentPath);
         }
 
         /// <summary>
