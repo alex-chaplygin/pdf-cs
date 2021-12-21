@@ -38,14 +38,16 @@ namespace PdfCS
                 baseEncoding = (string)dic["BaseEncoding"];
             if (dic.ContainsKey("Differences"))
             {
-                var differences = (object[][])dic["Differences"];
+                var differences = (object[])dic["Differences"];
+                int startValueIndex = 0;
                 for (int i = 0; i < differences.Length; i++)
                 {
-                    int startValue = (int)differences[i][0];
-                    for (int j = 1; j < differences[i].Length; j++)
+                    if (differences[i] is int)
                     {
-                        encoding[j + startValue - 1] = (string)differences[i][j];
+                        startValueIndex = i;
+                        continue;
                     }
+                    encoding[(int)differences[startValueIndex] + i - startValueIndex - 1] = (string)differences[i];
                 }
             }
         }
