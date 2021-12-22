@@ -118,7 +118,7 @@ namespace PDFTest
 	[TestMethod]
         public void OpenTest()
         {
-            string path = "pdfs/test.pdf";
+            string path = "pdfs/test2.pdf";
             Assert.IsTrue(File.Exists(path));
 
             FileStream fileStream = File.OpenRead(path);

@@ -297,6 +297,7 @@ namespace PdfCS
                 count--;
             }
             int xrefOffset = int.Parse(new String(line.Reverse().ToArray()));
+	    Console.WriteLine($"xref offset = {xrefOffset}");
             stream.Seek(xrefOffset, SeekOrigin.Begin);
 	    parser.NextChar();
             ReadCrossReferenceTable();
