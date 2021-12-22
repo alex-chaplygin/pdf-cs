@@ -178,7 +178,10 @@ namespace PdfCS
             {"f", new Operator(FillPath)},
             {"F", new Operator(FillPath)},
 	    {"f*", new Operator(FillPathEven)},
-            {"'",  new Operator(MoveAndShowText)}
+            {"'",  new Operator(MoveAndShowText)},
+	    {"c", new Operator(AddCurve3)},
+            {"v", new Operator(AddCurve2)},
+            {"y", new Operator(AddCurve1)},
         };
 
         /// <summary>
@@ -595,6 +598,107 @@ namespace PdfCS
             int g = (int)operands.Pop();
             int r = (int)operands.Pop();
             return Color.FromArgb(255, r, g, b);
+        }
+	
+	/// <summary>
+        /// x1 y1 x2 y2 x3 y3 c
+        /// Добавляет в текущий путь #66 кривую Безье
+        /// p1, p2 - контрольные точки
+        /// p3 - конечная точка
+        /// </summary>
+        private static void AddCurve3()
+        {
+            PointF lastPoint;
+            try
+            {
+                lastPoint = currentPath.GetLastPoint();
+            }
+            catch (Exception)
+            {
+                lastPoint = pathFirstPoint;
+            }
+            double y3 = ReadNumber();
+            double x3 = ReadNumber();
+            double y2 = ReadNumber();
+            double x2 = ReadNumber();
+            double y1 = ReadNumber();
+            double x1 = ReadNumber();
+
+            currentState.CTM.MultVector(x1, y1, out x1, out y1);
+            currentState.CTM.MultVector(x2, y2, out x2, out y2);
+            currentState.CTM.MultVector(x3, y3, out x3, out y3);
+
+            PointF p0 = lastPoint;
+            PointF p1 = new PointF((float)x1, (float)y1);
+            PointF p2 = new PointF((float)x2, (float)y2);
+            PointF p3 = new PointF((float)x3, (float)y3);
+            currentPath.AddBezier(p0, p1, p2, p3);
+        }
+
+        /// <summary>
+        /// x2 y2 x3 y3 v
+        /// Добавляет в текущий путь #66 кривую Безье
+        /// контрольная точка p1 берется из последней точки пути
+        /// p2 - контрольная точка
+        /// p3 - конечная точка
+        /// </summary>
+        private static void AddCurve2()
+        {
+            PointF lastPoint;
+            try
+            {
+                lastPoint = currentPath.GetLastPoint();
+            }
+            catch (Exception)
+            {
+                lastPoint = pathFirstPoint;
+            }
+            double y3 = ReadNumber();
+            double x3 = ReadNumber();
+            double y2 = ReadNumber();
+            double x2 = ReadNumber();
+
+            currentState.CTM.MultVector(x2, y2, out x2, out y2);
+            currentState.CTM.MultVector(x3, y3, out x3, out y3);
+
+            PointF p0 = lastPoint;
+            PointF p1 = p0;
+            PointF p2 = new PointF((float)x2, (float)y2);
+            PointF p3 = new PointF((float)x3, (float)y3);
+            currentPath.AddBezier(p0, p1, p2, p3);
+        }
+
+        /// <summary>
+        /// x1 y1 x3 y3 y
+        /// Добавляет в текущий путь #66 кривую Безье
+        /// контрольная точка p2 совпадает с точкой p3
+        /// p1 - контрольная точка
+        /// p3 - конечная точка
+        /// </summary>
+        private static void AddCurve1()
+        {
+            PointF lastPoint;
+            try
+            {
+                lastPoint = currentPath.GetLastPoint();
+            }
+            catch (Exception)
+            {
+                lastPoint = pathFirstPoint;
+            }
+            double y3 = ReadNumber();
+            double x3 = ReadNumber();
+            double y1 = ReadNumber();
+            double x1 = ReadNumber();
+
+            currentState.CTM.MultVector(x1, y1, out x1, out y1);
+            currentState.CTM.MultVector(x3, y3, out x3, out y3);
+
+            PointF p0 = lastPoint;
+            PointF p1 = new PointF((float)x1, (float)y1);
+            PointF p3 = new PointF((float)x3, (float)y3);
+            PointF p2 = p3;
+            currentPath.AddBezier(p0, p1, p2, p3);
         }
     }
 }
