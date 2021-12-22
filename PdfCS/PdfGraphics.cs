@@ -177,6 +177,7 @@ namespace PdfCS
             {"sc", new Operator(SetFillColor)},
             {"f", new Operator(FillPath)},
             {"F", new Operator(FillPath)},
+	    {"f*", new Operator(FillPathEven)},
             {"'",  new Operator(MoveAndShowText)}
         };
 
@@ -510,7 +511,9 @@ namespace PdfCS
         }
 
         /// <summary>
-        /// Заполнение текущего пути
+	/// f
+	/// F
+        /// Заполнение текущего пути с обходом контура non zero winding
         /// </summary>
         private static void FillPath()
         {
@@ -520,6 +523,18 @@ namespace PdfCS
         }
 
         /// <summary>
+	/// f*
+        /// Заполнение текущего пути с обходом контура even-odd
+        /// </summary>
+	private static void FillPathEven()
+        {
+            ClosePath();
+            currentPath.FillMode = FillMode.Alternate;
+            graphics.FillPath(new SolidBrush(currentState.fillColor), currentPath);
+        }
+
+        /// <summary>
+	/// S
         /// Добавляет обводку к текущему пути
         /// </summary>
         private static void StrokePath()
