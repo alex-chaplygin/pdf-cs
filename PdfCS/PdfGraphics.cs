@@ -44,7 +44,7 @@ namespace PdfCS
             /// </summary>
             public double textFontSize;
 
-	        /// <summary>
+            /// <summary>
             /// имя шрифта
             /// </summary>
             public string textFont;
@@ -99,19 +99,19 @@ namespace PdfCS
         /// </summary>
         public struct Rectangle
         {
-	        /// <summary>
-	        ///   левый нижний угол
-	        /// </summary>
+            /// <summary>
+            ///   левый нижний угол
+            /// </summary>
             public double llx;
             public double lly;
 
-	        /// <summary>
-	        ///   правый верхний угол
-	        /// </summary>
+            /// <summary>
+            ///   правый верхний угол
+            /// </summary>
             public double urx;
             public double ury;
 
-	    public Rectangle(double llx, double lly, double urx, double ury)
+            public Rectangle(double llx, double lly, double urx, double ury)
             {
                 this.llx = llx;
                 this.lly = lly;
@@ -162,11 +162,12 @@ namespace PdfCS
             {"q",  new Operator(PushState)},
             {"Q",  new Operator(PopState)},
             {"Tf", new Operator(SelectFont)},
-	    {"Tj", new Operator(ShowText)},
+            {"Tj", new Operator(ShowText)},
             {"m", new Operator(BeginPath)},
+            {"h", new Operator(ClosePath)},
             {"l", new Operator(AddLine)},
-	    {"Td", new Operator(TextMove)},
-	    {"TL", new Operator(SetLeading)},
+            {"Td", new Operator(TextMove)},
+            {"TL", new Operator(SetLeading)},
             {"TD", new Operator(TextMoveLeading)},
             {"w", new Operator(SetLineWidth)},
             {"re", new Operator(AddRectangle)},
@@ -197,8 +198,8 @@ namespace PdfCS
             currentState.strokeColor = Color.Black;
             graphics = g;
             mediaBox = r;
-	        operands = new Stack<object>();
-	        states = new Stack<State>();
+            operands = new Stack<object>();
+            states = new Stack<State>();
         }
 
         /// <summary>
@@ -222,7 +223,7 @@ namespace PdfCS
                 throw new Exception("Текстовый объект уже создан");
             currentState.textMatrix = new Matrix();
             currentState.beginText = true;
-	        currentState.textFont = "Arial";
+            currentState.textFont = "Arial";
             currentState.textRise = 0;
             currentState.horizontalScale = 1.0;
         }
@@ -234,8 +235,8 @@ namespace PdfCS
         private static void EndText()
         {
             currentState.beginText = false;
-	}
-	
+        }
+
         /// <summary>
         /// Модифицирует текущую матрицу трансформаций в текущем состоянии #51
         /// 
@@ -314,7 +315,7 @@ namespace PdfCS
         /// <param name="resources">словарь ресурсов страницы</param>
         public static void Render(byte[] content, Dictionary<string, object> resources)
         {
-	    Parser parser = new Parser(new MemoryStream(content));
+            Parser parser = new Parser(new MemoryStream(content));
             parser.NextChar();
             object temp;
             while (true)
@@ -328,10 +329,10 @@ namespace PdfCS
                     operands.Push(temp);
             }
         }
-	
+
         /// <summary>
         /// перемещает позицию текста
-	    ///
+        ///
         /// tx ty Td
         /// операнды tx ty берутся из стека операндов #52
         /// создается матрица перемещения Mt #50
@@ -347,7 +348,7 @@ namespace PdfCS
             currentState.textMatrix = Mt.Mult(currentState.textMatrix);
         }
 
-	/// <summary>
+        /// <summary>
         /// установка расстояния между строками
         /// leading TL
         /// </summary>
@@ -363,13 +364,13 @@ namespace PdfCS
         /// </summary>
         static void TextMoveLeading()
         {
-	    double num = ReadNumber();
+            double num = ReadNumber();
             currentState.leading = -num;
-	    operands.Push(num);
+            operands.Push(num);
             TextMove();
         }
-	
-	/// <summary>
+
+        /// <summary>
         /// выводит строку текста
         /// 
         /// операнд - строка (тип char[])
@@ -397,7 +398,7 @@ namespace PdfCS
             Tr.MultVector(0, 0, out x, out y);
 
             graphics.DrawString(String.Concat<char>(array), new Font(currentState.textFont,
-	        (float)Math.Abs(currentState.textFontSize * currentState.CTM.GetValues()[3])),
+            (float)Math.Abs(currentState.textFontSize * currentState.CTM.GetValues()[3])),
                 new SolidBrush(Color.Black), (int)x, (int)y);
         }
 
@@ -432,12 +433,12 @@ namespace PdfCS
             currentPath = new GraphicsPath();
         }
 
-	    /// <summary>
-	    /// добавление прямой линии
-	    ///
-	    /// x y l
-	    /// добавляет сегмент прямой линии в текущий путь
-	    /// </summary>
+        /// <summary>
+        /// добавление прямой линии
+        ///
+        /// x y l
+        /// добавляет сегмент прямой линии в текущий путь
+        /// </summary>
         private static void AddLine()
         {
             double y = ReadNumber();
@@ -450,11 +451,13 @@ namespace PdfCS
             try
             {
                 lastPoint = currentPath.GetLastPoint();
-            } catch (Exception) {
+            }
+            catch (Exception)
+            {
                 lastPoint = pathFirstPoint;
             }
-	        if (currentPath == null)
-		        currentPath = new GraphicsPath();
+            if (currentPath == null)
+                currentPath = new GraphicsPath();
             currentPath.AddLine(lastPoint, new PointF((float)ox, (float)oy));
         }
 
@@ -493,10 +496,28 @@ namespace PdfCS
             ClosePath();
         }
 
-
+        /// <summary>
+        /// Закрывает текущий путь #66
+        /// 
+        /// добавляет прямую линию из текущей (последней точки) в начальную точку пути.
+        /// если последний сегмент пути уже замкнул путь, то ничего не делает.
+        /// </summary>
         private static void ClosePath()
         {
+            PointF lastPoint;
+            try
+            {
+                lastPoint = currentPath.GetLastPoint();
+            }
+            catch (Exception)
+            {
+                lastPoint = pathFirstPoint;
+            }
+            if (currentPath == null)
+                currentPath = new GraphicsPath();
 
+            if (lastPoint != pathFirstPoint)
+                currentPath.AddLine(lastPoint, pathFirstPoint);
         }
 
         private static void SetStrokeColor()
@@ -539,7 +560,7 @@ namespace PdfCS
             operands.Push(0);
             operands.Push(-currentState.leading);
             TextMove();
-	    }
+        }
 
         /// <summary>
         /// Отображает одну или более строк.
@@ -549,8 +570,7 @@ namespace PdfCS
         /// </summary>
         private static void ShowStrings()
         {
-            object[] temp = (object[])operands.Pop(); 
-            foreach (object x in temp)
+            foreach (object x in operands)
             {
                 if (x is char[])
                 {
@@ -558,11 +578,11 @@ namespace PdfCS
                     ShowText();
                 }
                 if (x is double)
-                    currentState.textX += (double)x/1000;
+                    currentState.textX += (double)x / 1000;
             }
         }
 
-	    /// <summary>
+        /// <summary>
         /// Cчитывает число (целое или вещественное) из стека операндов и преобразует его в double
         /// </summary>
         /// <returns> Вещественное число из стека операндов </returns> 
