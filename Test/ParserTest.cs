@@ -28,7 +28,7 @@ namespace PDFTest
 		Assert.Fail();
 	    object o2 = ReadToken(s);
 	    //Console.WriteLine($"\nТребуется = {Convert.ChangeType(o, t)} Получено = {Convert.ChangeType(o2, t)}");
-	    if (t == typeof(byte[]))
+	    if (t == typeof(byte[]) || t == typeof(char[]))
 		CollectionAssert.AreEqual((System.Collections.ICollection)Convert.ChangeType(o2, t),
 					  (System.Collections.ICollection)Convert.ChangeType(o, t));
 	    else
@@ -417,6 +417,55 @@ namespace PDFTest
             {
                 Assert.AreEqual(ex.Message, "ReadDictionary завершился без закрывающих скобок");
             }
+        }
+	
+	[TestMethod]
+        public void ReadStringTest1()
+        {
+            TestToken("(string)", typeof(char[]), "string".ToCharArray());
+        }
+
+        [TestMethod]
+        public void ReadStringTest2()
+        {
+            TestToken("(string\\n)", typeof(char[]), "string\n".ToCharArray());
+        }
+
+        [TestMethod]
+        public void ReadStringTest3()
+        {
+            TestToken("(Strings may contain balanced parentheses ( ) and special characters ( * ! & } ^ % and so on ).)", typeof(char[]),
+                "Strings may contain balanced parentheses ( ) and special characters ( * ! & } ^ % and so on ).".ToCharArray());
+        }
+
+        [TestMethod]
+        public void ReadStringTest4()
+        {
+            TestToken("()", typeof(char[]), "".ToCharArray());
+        }
+
+        [TestMethod]
+        public void ReadStringTest5()
+        {
+            TestToken("(This string contains \\005two octal characters\\0109.)", typeof(char[]), ("This string contains \u0005two octal characters\u0008" + "9.").ToCharArray());
+        }
+
+        [TestMethod]
+        public void ReadStringTest6()
+        {
+            TestToken("(\\5\\05\\0010\\010)", typeof(char[]), ("\u0005\u0005\u0001"+"0"+"\u0008").ToCharArray());
+        }
+
+        [TestMethod]
+        public void ReadStringTest7()
+        {
+            TestToken("(aaa\\" + "\nbbb)", typeof(char[]), ("aaabbb").ToCharArray());
+        }
+
+        [TestMethod]
+        public void ReadStringTest8()
+        {
+            TestToken("(aaa\r\nbbb)", typeof(char[]), ("aaa\nbbb").ToCharArray());
         }
     }
 }

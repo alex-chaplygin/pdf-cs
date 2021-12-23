@@ -375,7 +375,7 @@ namespace PdfCS
             string tabIn = "nrtfavb\\";
             string tabOut = "\n\r\t\f\a\v\b\\";
             while (count > 0)
-            {        
+            {
                 NextChar();
                 if (lastChar == '\uffff') throw new Exception("Ошибка, конец файла внутри строки");
                 else if (lastChar == '(')
@@ -385,13 +385,13 @@ namespace PdfCS
                 else if (lastChar == '\\')
                 {
                     NextChar();
-                    if(Parser.IsWhitespace(lastChar))
+                    if (Parser.IsWhitespace(lastChar))
                         SkipEndOfLine();
                     else if (tabIn.Contains(lastChar))
                         lastChar = tabOut[tabIn.IndexOf(lastChar)];
                     else if (lastChar >= '0' && lastChar <= '7')
                     {
-                        number = "";                     
+                        number = "";
                         for (int i = 0; i < 3; i++)
                         {
                             if (lastChar >= '0' && lastChar <= '7')
@@ -400,12 +400,12 @@ namespace PdfCS
                                 break;
                             NextChar();
                         }
-                        charArray += Convert.ToInt32(number, 8);
+                        charArray += (char)Convert.ToByte(number, 8);
                     }
                 }
                 charArray += lastChar;
             }
-	    NextChar();
+            NextChar();
             return charArray.Remove(charArray.Length - 1).ToCharArray();
         }
 
