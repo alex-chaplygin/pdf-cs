@@ -183,6 +183,7 @@ namespace PdfCS
 	    {"c", new Operator(AddCurve3)},
             {"v", new Operator(AddCurve2)},
             {"y", new Operator(AddCurve1)},
+	    {"n", new Operator(() => {}) },
         };
 
         /// <summary>
