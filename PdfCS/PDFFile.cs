@@ -375,6 +375,78 @@ namespace PdfCS
                 Tuple<int, int> t = (Tuple<int, int>)dict["Extends"];
                 return ReadObjectFromStream(t.Item1, (int)((long)dict["N"] - index));
             }
+        }
+
+	/// <summary>
+        /// загружает объект страницы
+        /// загрузить каталог по ссылке root, все объекты загружаем с помощью #35
+        /// проверяем тип объекта Type - Catalog
+        /// загружаем объект по полю Pages(по ссылке)
+        /// каждый узел начиная с Pages содержит поля
+        /// Kids - массив ссылок на дочерние элементы
+        /// Count - количество дочерних элементов
+        /// нужно обойти массив чтобы отсчитать объект по номеру страницы
+        /// если дочерний объект - узел(Type = Pages) тогда обходим узел
+        /// конечные узлы - Type = Page
+        /// нужен вспомогательный метод
+        /// </summary>
+        /// <param name="num">номер страницы, начиная с 1</param>
+        /// <returns>страницу указанного номера</returns>
+        public static Dictionary<string, object> GetPage(int num)
+        {
+            Dictionary<string, object> page;
+            int count;
+            object[] kids;
+            Dictionary<string, object> catalog;
+            Dictionary<string, object> pages;
+            GetObject(root.Item1, out catalog);
+
+            if (catalog["Type"].ToString() != "Catalog")
+                throw new Exception("тип каталога не равен Catalog");
+
+            Tuple<int, int> tupPages = (Tuple<int, int>)catalog["Pages"];
+            
+            GetObject(tupPages.Item1, out pages);
+            kids = (object[])pages["Kids"];
+            count = (int)pages["Count"];
+            if (count < num)
+                throw new Exception("Номер страницы превышает количество страниц документа");
+            GetObject(((Tuple<int, int>)kids[num - 1]).Item1, out page);       
+            
+            return page;
+        }        
+
+        /// <summary>
+        /// вспомогательный метод для GetPage
+        /// </summary>
+        /// <param name="num">номер страницы</param>
+        /// <param name="node">словарь узла</param>
+        /// <returns></returns>
+        private static object GetNode(int num, Dictionary<string, object> node)
+        {
+            
+            object[] kids = (object[])node["Kids"];
+            object page = null;
+            Dictionary<string, object> tempPages;
+            
+                if ((int)node["Count"] >= num)
+                {
+                    for (int i = 0; i < (int)node["Count"]; i++)
+                    {
+                        GetObject((int)kids[i], out tempPages);
+                        if (tempPages["Type"].ToString() == "Pages")
+                        {
+                            page = GetNode(num, tempPages);
+                        }
+                        else if (tempPages["Type"].ToString() == "Page")
+                        {
+                            if (i + 1 == num)
+                                page = tempPages;
+                        }
+                    }
+                }
+            
+            return page;        
         }	
     }
 }
