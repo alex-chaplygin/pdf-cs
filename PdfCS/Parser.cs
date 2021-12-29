@@ -377,18 +377,20 @@ namespace PdfCS
             while (count > 0)
             {
                 NextChar();
-                if (lastChar == '\uffff') throw new Exception("Ошибка, конец файла внутри строки");
+            f: if (lastChar == '\uffff') throw new Exception("Ошибка, конец файла внутри строки");
                 else if (lastChar == '(')
                     count++;
                 else if (lastChar == ')')
                     count--;
+                else if (lastChar == '\r')
+                    continue;
                 else if (lastChar == '\\')
                 {
                     NextChar();
-                    if (Parser.IsWhitespace(lastChar))
-                        SkipEndOfLine();
-                    else if (tabIn.Contains(lastChar))
-                        lastChar = tabOut[tabIn.IndexOf(lastChar)];
+                    if (tabIn.Contains(lastChar))
+                        lastChar = tabOut[tabIn.IndexOf(lastChar)];                   
+                    else if (Parser.IsWhitespace(lastChar))                    
+                        continue;                    
                     else if (lastChar >= '0' && lastChar <= '7')
                     {
                         number = "";
@@ -401,6 +403,7 @@ namespace PdfCS
                             NextChar();
                         }
                         charArray += (char)Convert.ToByte(number, 8);
+                        goto f;
                     }
                 }
                 charArray += lastChar;
