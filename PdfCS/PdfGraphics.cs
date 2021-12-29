@@ -153,6 +153,10 @@ namespace PdfCS
             {"f", new Operator(FillPath)},
             {"F", new Operator(FillPath)},
 	    {"f*", new Operator(FillPathEven)},
+	    {"B", new Operator(FillAndThenStrokePathNonZero)},
+            {"B*", new Operator(FillAndThenStrokePathEvenOddRule)},
+            {"b", new Operator(CloseFillAndThenStrokePathNonZero)},
+            {"b*", new Operator(CloseFillAndThenStrokePathEvenOddRule)},
             {"'",  new Operator(MoveAndShowText)},
 	    {"c", new Operator(AddCurve3)},
             {"v", new Operator(AddCurve2)},
@@ -531,6 +535,57 @@ namespace PdfCS
             currentPath.FillMode = FillMode.Alternate;
             graphics.FillPath(new SolidBrush(currentState.fillColor), currentPath);
         }
+
+	/// <summary>
+        /// Cначала заполняет контур с правилом не нулевого контура, потом обводит.
+        /// 
+        /// Operator - B
+        /// </summary>
+        private static void FillAndThenStrokePathNonZero()
+        {
+            currentPath.FillMode = FillMode.Winding;
+            graphics.FillPath(new SolidBrush(currentState.fillColor), currentPath);
+
+            graphics.DrawPath(new Pen(currentState.strokeColor) {
+                Width = (float)(currentState.lineWidth * currentState.CTM.GetValues()[0]) }, currentPath);
+        }
+
+        /// <summary>
+        /// Тоже что и последовательность h B.
+        /// 
+        /// Operator - b
+        /// </summary>
+        private static void CloseFillAndThenStrokePathNonZero()
+        {
+            ClosePath();
+
+            FillAndThenStrokePathNonZero();
+        }
+
+        /// <summary>
+        /// Сначала заполняет контур с правилом четный-нечетный, потом обводит.
+        /// 
+        /// Operator - B*
+        /// </summary>
+        private static void FillAndThenStrokePathEvenOddRule()
+        {
+            currentPath.FillMode = FillMode.Alternate;
+            graphics.FillPath(new SolidBrush(currentState.fillColor), currentPath);
+
+            graphics.DrawPath(new Pen(currentState.strokeColor) {
+                Width = (float)(currentState.lineWidth * currentState.CTM.GetValues()[0]) }, currentPath);
+        }
+
+        /// <summary>
+        /// Тоже что и последовательность h B*.
+        /// 
+        /// Operator - b*
+        /// </summary>
+        private static void CloseFillAndThenStrokePathEvenOddRule()
+        {
+            ClosePath();
+            FillAndThenStrokePathEvenOddRule();
+        }	
 
         /// <summary>
 	/// S
