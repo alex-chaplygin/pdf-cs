@@ -47,6 +47,7 @@
     <Compile Include="Parser.cs" />
     <Compile Include="PdfImage.cs" />
     <Compile Include="FontEncoding.cs" />
+    <Compile Include="PdfFont.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="PDFFile.cs" />
     <Compile Include="Encryption.cs" />
