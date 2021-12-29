@@ -95,32 +95,6 @@ namespace PdfCS
         }
 
         /// <summary>
-        /// Прямоуголная область
-        /// </summary>
-        public struct Rectangle
-        {
-            /// <summary>
-            ///   левый нижний угол
-            /// </summary>
-            public double llx;
-            public double lly;
-
-            /// <summary>
-            ///   правый верхний угол
-            /// </summary>
-            public double urx;
-            public double ury;
-
-            public Rectangle(double llx, double lly, double urx, double ury)
-            {
-                this.llx = llx;
-                this.lly = lly;
-                this.urx = urx;
-                this.ury = ury;
-            }
-        }
-
-        /// <summary>
         /// Текущее состояние графики
         /// </summary>
         private static State currentState;

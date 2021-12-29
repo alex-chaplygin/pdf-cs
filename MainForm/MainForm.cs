@@ -30,7 +30,7 @@ namespace MainForm
 
         private void pictureBox1_Paint(object sender, PaintEventArgs e)
         {
-            PdfGraphics.Rectangle rectangle = new PdfGraphics.Rectangle(0, 0, pictureBox1.Width, pictureBox1.Height);
+            PdfCS.Rectangle rectangle = new PdfCS.Rectangle(0, 0, pictureBox1.Width, pictureBox1.Height);
 
             PdfGraphics.Init(e.Graphics, rectangle);
             PdfGraphics.SetSize(pictureBox1.Width, pictureBox1.Height);

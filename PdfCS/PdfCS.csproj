@@ -48,6 +48,8 @@
     <Compile Include="PdfImage.cs" />
     <Compile Include="FontEncoding.cs" />
     <Compile Include="PdfFont.cs" />
+    <Compile Include="PdfFontType3.cs" />
+    <Compile Include="Rectangle.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="PDFFile.cs" />
     <Compile Include="Encryption.cs" />

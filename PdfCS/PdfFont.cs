@@ -7,43 +7,42 @@ public class PdfFont
     /// <summary>
     ///тип шрифта
     ///</summary>
-    string subType;
+    protected string subType;
 
     /// <summary>
     ///имя шрифта
     ///</summary>
-    string baseFont;
+    protected string baseFont;
 
     /// <summary>
     ///код первого символа в массиве Widths
     ///</summary>
-    int firstChar;
+    protected int firstChar;
 
     /// <summary>
     /// код последнего символа в массиве Widths
     ///</summary>
-    int lastChar;
+    protected int lastChar;
 
     /// <summary>
     /// массив ширин фигур в шрифте
     ///</summary>
-    int[] widths;
+    protected int[] widths;
 
     /// <summary>
     ///словарь, хранящий метрики шрифта
     ///</summary>
-    Dictionary<string, object> fontDescriptor;
+    protected Dictionary<string, object> fontDescriptor;
 
     /// <summary>
     ///encoding - имя кодировки
     ///</summary>
-    string encoding;
+    protected string encoding;
 
     /// <summary>
     ///поток соответствия кодов символов кодам Unicode
     ///</summary>
-    ///
-    byte[] toUnicode;
+    protected byte[] toUnicode;
 
     /// <summary>
     ///   считываем данные шрифта из словаря 
