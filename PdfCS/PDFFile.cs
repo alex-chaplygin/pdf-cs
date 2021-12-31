@@ -24,6 +24,17 @@ namespace PdfCS
                 streamNum = 0;
                 streamIndex = 0;
             }
+
+	    public XRefEntry(bool c, int sn, int si)
+            {
+                offset = 0;
+                generation = 0;
+                free = false;
+                compressed = c;
+                streamNum = sn;
+                streamIndex = si;
+            }
+	    
             /// <summary>
             /// смещение в файле
             /// </summary>
@@ -171,9 +182,95 @@ namespace PdfCS
             }
         }
 
-	private static void LoadXRefStream() //метод #36
+	/// <summary>
+        /// загружает поток ссылок, позиция в файле уже установлена
+        /// поток загружается с помощью #25
+        /// словарь содержит те же поля, что и обычная таблица ссылок, их нужно считать из словаря #32
+        /// Пример:
+        /// 0 obj % Cross-reference stream
+        /// << /Type /XRef % Cross-reference stream dictionary
+        /// /Size...
+        /// /Root...
+        /// 
+        /// stream
+        /// ...Stream data containing cross-reference information ...
+        /// endstream
+        /// endobj
+        /// также словарь содержит поля из хвоста #33
+        /// их нужно сохранить в соответствующие поля класса
+        /// все следующие значения являются прямыми объектами
+        /// Дополнительные поля словаря:
+        /// Type - XRef
+        /// Size - максимальный номер объекта + 1
+        /// Index(необязательный) - массив из пар целых чисел: номер первого объекта и число объектов в каждой секции #32
+        /// Prev(необязательно) - смещение на предыдущую таблицу ссылок, если есть смещаемся в файле и вызываем загрузку таблицы ссылок #32
+        /// W - массив из 3х целых чисел: длина полей для записей в байтах, например[1 2 1]
+        /// если какой-то элемент равен 0, значит этого поля нет, нужно использовать значение по умолчанию
+        /// если первого поля нет, то по умолчанию берется тип 1
+        /// Каждая запись в потоке имеет 1 или более полей,
+        /// первое поле - тип записи(0, 1, 2) любое другое значение означает, что объект - null
+        /// длина каждого поля определяется через W
+        /// Тип 0 - свободный объект
+        /// поле 2 - номер следующего свободного объекта(игнорируем)
+        /// поле 3 - номер поколения
+        /// Тип 1 - не сжатый объект
+        ///  поле2 - смещение
+        ///  поле3 - номер поколения(по умолчанию 0)
+        ///  Тип 2 - сжатый объект
+        /// поле 2 - номер потокового объекта, где хранится объект
+        /// поле 3 - индекс объекта внутри потока
+        /// </summary>
+        public static void LoadXRefStream() //метод #36
         {
-        
+            Dictionary<string, object> dict;
+	    object o = parser.ReadIndirectObject(out dict); // метод 25
+            byte[] b = (byte[])o;
+            MemoryStream m = new MemoryStream();
+            m.Write(b, 0, b.Length);
+            m.Seek(0, SeekOrigin.Begin);
+            int size = (int)dict["Size"];
+            object[] W = (object[])dict["W"];
+
+            int[] val = new int[3];
+
+            for (int i = 0; i < size; i++)
+            {
+                for (int w = 0; w < 3; w++)
+                {
+                    byte[] bt = new byte[4];
+                    for (int k = 0; k < (int)W[w]; k++) //чтение в соответствии с длиной поля
+                        bt[k] = (byte)m.ReadByte();
+                      
+                    val[w] = BitConverter.ToInt32(bt, 0);
+                }
+
+                if (xrefTable == null)
+                    xrefTable = new XRefEntry[1];
+                else
+                    Array.Resize(ref xrefTable, xrefTable.Length + 1);
+
+                 if ((int)W[0] == 0) // если первого поля нет, то по умолчанию берется тип 1
+                    val[0] = 1;
+
+                if (val[0] == 0)
+                {
+                    xrefTable[i].free = true; // свободный объект
+                    xrefTable[i].generation = val[2]; // номер поколения
+                }
+                if (val[0] == 1)
+                {
+                    xrefTable[i].compressed = false; // не сжатый
+                    xrefTable[i].offset = val[1]; // смещение
+                    xrefTable[i].generation = val[2]; // номер поколения
+                }
+                if (val[0] == 2)
+                {
+                    xrefTable[i].compressed = true; //сжатый
+                    xrefTable[i].streamNum = val[1]; // номер потокового объекта, где хранится объект
+                    xrefTable[i].streamIndex = val[2]; //индекс объекта внутри потока
+                    xrefTable[i].generation = 0; // номер поколения по умолчанию 0
+                }
+            }
         }
 
 	/// <summary>

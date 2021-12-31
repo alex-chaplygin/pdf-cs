@@ -125,5 +125,27 @@ namespace PDFTest
             PDFFile.Open(fileStream);
             Assert.IsTrue(PDFFile.xrefTable.Length > 0);
         }
+
+	[TestMethod]
+        public void LoadXRefStreamTest()
+        {
+            string s = "20 0 obj\n" +
+            "<</Type/XRef/Size 3/W [1 2 1] /Length 37 /Filter/ASCIIHexDecode>>\n" +
+            "stream\n" +
+            "00 1111 22    01 1000 00   02 2000 02\n" +
+            "endstream\nendobj\n";
+            MemoryStream m = new MemoryStream(s.Select<char, byte>(x => (byte)x).ToArray());
+            PDFFile.parser = new Parser(m);
+            PDFFile.parser.NextChar();
+            PDFFile.LoadXRefStream();
+
+            PDFFile.XRefEntry[] table = new PDFFile.XRefEntry[]
+            {
+                new PDFFile.XRefEntry(0, 0x22, true),
+                new PDFFile.XRefEntry(0x10, 0, false),
+                new PDFFile.XRefEntry(true, 0x20, 2),
+            };
+            CollectionAssert.AreEqual(table, PDFFile.xrefTable);
+        }
     }
 }
