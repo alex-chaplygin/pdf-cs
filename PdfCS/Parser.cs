@@ -689,7 +689,7 @@ namespace PdfCS
                 foreach (object o in (object[])parameters)
                     sparams.Add((Dictionary<string, object>)o);
             else
-                sparams.Add((Dictionary<string, object>)filters);
+                sparams.Add((Dictionary<string, object>)parameters);
             array = ApplyFilter(array, sfilters, sparams);
             return array;
         }
