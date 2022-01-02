@@ -168,13 +168,13 @@ namespace PdfCS
         }
 
         /// <summary>
-	/// Аутентификация пользователя
-	///
-        /// В зависимости от версии шифрования вызывает
+	    /// Аутентификация пользователя
+	    ///
+        /// 1. В зависимости от версии шифрования вызывает
         /// Вычисление строки пароля пользователя #44 (2 версия)
         /// Вычисление строки пароля пользователя #45 (для версии шифрования 3 и выше)
-        /// Сравниваем полученную строку со строкой U, для версии 3 и выше сравниваем только 16 байт
-        /// Если значения равны, то аутентификация успешная
+        /// 2. Сравниваем полученную строку со строкой U, для версии 3 и выше сравниваем только 16 байт
+        /// 3. Если значения равны, то аутентификация успешная
         /// </summary>
         /// <param name="pass">Пароль пользователя</param>
         /// <returns>Успешная ли аутентификация</returns>
@@ -183,19 +183,13 @@ namespace PdfCS
             byte[] temp;
             if (R == 2)
             {
-                temp = PadString(pass);
-                for (int i = 0; i < temp.Length; i++)
-                    if (temp[i] != U[i])
-                        return false;
-                return true;
+                temp = ComputeUserPasswordV2(pass);
+                return temp.SequenceEqual(U);
             }
             else if (R >= 3)
             {
                 temp = ComputeUserPasswordV3(pass);
-                for (int i = 0; i < 16; i++)
-                    if (temp[i] != U[i])
-                        return false;
-                return true;
+                return temp.Take(16).SequenceEqual(U.Take(16));
             }
             return false;
         }
