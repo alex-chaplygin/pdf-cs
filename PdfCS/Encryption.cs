@@ -370,17 +370,17 @@ namespace PdfCS
         private static byte[] PadString(string s)
         {
             byte[] ext = {
-		0x28, 0xBF, 0x4E, 0x5E, 0x4E, 0x75, 0x8A, 0x41,
-		0x64, 0x00, 0x4E, 0x56, 0xFF, 0xFA, 0x01, 0x08,
-		0x2E, 0x2E, 0x00, 0xB6, 0xD0, 0x68, 0x3E, 0x80,
-		0x2F, 0x0C, 0xA9, 0xFE, 0x64, 0x53, 0x69, 0x7A
-	    };
-	    byte[] o = new byte[32];
-	    for (int i = 0; i < 32; i++)
-		if (i >= s.Length)
-		    o[i] = ext[i - s.Length];
-		else
-		    o[i] = (byte)s[i];
+                0x28, 0xBF, 0x4E, 0x5E, 0x4E, 0x75, 0x8A, 0x41,
+                0x64, 0x00, 0x4E, 0x56, 0xFF, 0xFA, 0x01, 0x08,
+                0x2E, 0x2E, 0x00, 0xB6, 0xD0, 0x68, 0x3E, 0x80,
+                0x2F, 0x0C, 0xA9, 0xFE, 0x64, 0x53, 0x69, 0x7A
+            };
+            byte[] o = new byte[32];
+            for (int i = 0; i < 32; i++)
+                if (i >= s.Length)
+                    o[i] = ext[i - s.Length];
+                else
+                    o[i] = (byte)s[i];
             return o;
         }
 
@@ -424,7 +424,7 @@ namespace PdfCS
 
         /// <summary>
         /// Вычисляет строку для пароля пользователя (для сравнения с U), версия шифрования 2.
-	///
+	    ///
         /// Алгоритм:
         /// 1. Вычислить ключ шифрования (Вычисление ключа шифрования #42) и сохранить его;
         /// 2. С помощью алгоритма RC4 (Дешифровка RC4 #38) зашифровать строку полученную
@@ -437,15 +437,10 @@ namespace PdfCS
         /// </returns>
         public static byte[] ComputeUserPasswordV2(string pass)
         {
-            byte[] key = ComputeDecryptionKey(pass);
-            byte[] result;
-
-            if (pass.Length < 32)
-                result = PadString(pass);
-            else
-                result = Encoding.UTF8.GetBytes(pass.Substring(0, 32));
-            encryptionKey = result;
-            return DecodeRC4(result, key);
+            return DecodeRC4(
+                PadString(pass), 
+                ComputeDecryptionKey(pass)
+            );
         }
 
         /// <summary>
