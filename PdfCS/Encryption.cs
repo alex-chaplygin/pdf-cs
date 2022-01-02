@@ -284,10 +284,11 @@ namespace PdfCS
         {
             R = (int)param["R"];
             V = (int)param["V"];
-            O = (byte[])param["O"];
-            U = (byte[])param["U"];
-            P = (int)param["P"];
-            encryptMetadata = (bool)param["encryptMetadata"];
+	    O = ((char[])param["O"]).Select<char, byte>(x => (byte)x).ToArray();
+            U = ((char[])param["U"]).Select<char, byte>(x => (byte)x).ToArray();
+	    P = (int)param["P"];
+            if (param.ContainsKey("encryptMetadata"))
+		encryptMetadata = (bool)param["encryptMetadata"];
 
             if ((V < 2 && R != 2) || ((V == 2 || V == 3) && R != 3) || (V == 4 && R != 4))
                 throw new Exception("Неверная версия шифрования/код алгоритма");

@@ -120,6 +120,7 @@ namespace PdfCS
                 obj = ReadObjectFromStream(xrefTable[num].streamNum, xrefTable[num].streamIndex);
             else {
 		stream.Seek(xrefTable[num].offset, SeekOrigin.Begin);
+		parser.NextChar();
                 obj = parser.ReadIndirectObject(out dict);
 	    }
             objectCache.Add(num, obj);
@@ -170,17 +171,34 @@ namespace PdfCS
         private static void ReadTrailer()
         {
             Dictionary<string, object> trailer = (Dictionary<string, object>)parser.ReadToken();
-            root = (Tuple<int, int>)trailer["Root"];
-            if (trailer.ContainsKey("Info"))
+	    if (root == null)
+		root = (Tuple<int, int>)trailer["Root"];
+            if (trailer.ContainsKey("Info")  && info == null)
                 info = (Tuple<int, int>)trailer["Info"];
             if (trailer.ContainsKey("ID") && trailer.ContainsKey("Encrypt"))
-                Encryption.Init((Dictionary<string, object>)trailer["Encrypt"], (object[])trailer["ID"]);
+		Encryption.Init((Dictionary<string, object>)LoadLink(trailer["Encrypt"]), (object[])trailer["ID"]);
             if (trailer.ContainsKey("Prev"))
             {
                 stream.Seek((long)trailer["Prev"], SeekOrigin.Begin);
+		parser.NextChar();
                 ReadCrossReferenceTable();
             }
         }
+
+	/// <summary>
+	///   Загружает объект по ссылке если объект - ссылка
+	/// </summary>
+	private static object LoadLink(object o)
+        {
+	    Dictionary<string, object> dict;
+	    
+	    if (o is Tuple<int, int>)
+            {
+                var tuple = (Tuple<int, int>)o;
+                return GetObject(tuple.Item1, out dict);
+            }
+	    return o;
+	}
 
 	/// <summary>
         /// загружает поток ссылок, позиция в файле уже установлена
@@ -327,6 +345,7 @@ namespace PdfCS
             if (o is int) 
             {
                 stream.Seek(position, SeekOrigin.Begin); //возвращаем позицию потока назад
+		parser.NextChar();
                 LoadXRefStream(); //вызываем чтение потока ссылок #36
                 return;
             }
@@ -463,6 +482,7 @@ namespace PdfCS
                     ofs = (int)parser.ReadToken();
                 }
                 stream.Seek(ofs + (long)dict["First"], SeekOrigin.Begin);
+		parser.NextChar();
                 object obj = parser.ReadToken();
                 objectCache.Add(num, obj);
                 return obj;
