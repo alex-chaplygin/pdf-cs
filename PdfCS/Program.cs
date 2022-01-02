@@ -11,10 +11,15 @@ namespace PdfCS
     {
         static void Main(string[] args)
         {
-	    Parser p = new Parser(File.OpenRead(args[0]));
-	    p.NextChar();
-	    Console.WriteLine(p.ReadKeyword());
-//	    Print(ASCII85.Decode(File.ReadAllBytes(args[0])));
+	    PDFFile.Open(File.OpenRead(args[0]));
+	    Dictionary<string, object> dict;
+            for (int i = 0; i < PDFFile.xrefTable.Length; i++)
+            {
+                if (PDFFile.xrefTable[i].offset == 0)
+                    continue;
+                var cur = PDFFile.GetObject(i, out dict);
+                Console.WriteLine($"Объект {i}: {cur.ToString()}");
+            }
         }
 
 	static void Print(byte[] arr)
