@@ -50,7 +50,8 @@ namespace PdfCS
         /// </returns>
         public static byte[] Decode(byte[] stream, Dictionary<string, object> predictParams = null) 
         {
-            InitParams(predictParams);
+	    if (predictParams != null)
+		InitParams(predictParams);
             Stream compStream = new MemoryStream(stream);
             DeflateStream decompStream =  new DeflateStream(compStream, CompressionMode.Decompress);
             byte[] decompressed = new byte[decompStream.Length];
