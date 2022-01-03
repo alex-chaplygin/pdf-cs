@@ -230,7 +230,9 @@ namespace PdfCS
         public static void Init(Dictionary<string, object> encrypt, object[] id)
         {
             Filter = (string)encrypt["Filter"];
-	    
+
+            id0 = (byte[])id[0];
+
             V = (int)encrypt["V"];
             if (encrypt.ContainsKey("SubFilter"))
                 SubFilter = (string)encrypt["SubFilter"];
@@ -278,11 +280,11 @@ namespace PdfCS
         {
             R = (int)param["R"];
             V = (int)param["V"];
-	    O = ((char[])param["O"]).Select<char, byte>(x => (byte)x).ToArray();
+	        O = ((char[])param["O"]).Select<char, byte>(x => (byte)x).ToArray();
             U = ((char[])param["U"]).Select<char, byte>(x => (byte)x).ToArray();
-	    P = (int)param["P"];
+	        P = (int)param["P"];
             if (param.ContainsKey("encryptMetadata"))
-		encryptMetadata = (bool)param["encryptMetadata"];
+		        encryptMetadata = (bool)param["encryptMetadata"];
 
             if ((V < 2 && R != 2) || ((V == 2 || V == 3) && R != 3) || (V == 4 && R != 4))
                 throw new Exception("Неверная версия шифрования/код алгоритма");
@@ -378,41 +380,43 @@ namespace PdfCS
             return o;
         }
 
-	/// <summary>
-	///   вычисляет ключ шифрования
-	///
-	///  Алгоритм:
-	///
-	/// Если длина строки больше 32 символов, обрезает строку до 32 символов
-	/// если меньше, то строка дополняется до 32 символов, символами из следующей строки (строка дополнения):
-	/// < 28 BF 4E 5E 4E 75 8A 41 64 00 4E 56 FF FA 01 08
-	/// 2E 2E 00 B6 D0 68 3E 80 2F 0C A9 FE 64 53 69 7A >
-	/// например, если длина n, то дополняется 32 - n символами
-	/// Если пароль пустой, то берется вся строка дополнения
-	/// Собирается строка для MD5 хеш-функции (смотри класс MD5), начинается со строки пароля
-	/// Добавляется строка O
-	/// Флаги P преобразуются в массив из 4х байт (младший впереди) и добавляется к строке MD5
-	/// Добавляется первая строка из id
-	/// Если версия шифрования 4 или больше и метаданные не зашифрованы, то 0xffffffff добавляется к строке MD5
-	/// Вычисляется хеш
-	/// Если версия шифрования 3 или больше, то 50 раз повторяется:
-	/// у предыдущего результата хеша берется n байт (n - число байт в ключе, вычисляется из Length) и от этого значения еще раз вычисляется MD5
-	/// У полученной строки байт берется n байт как ключ шифрования,
-	/// где n = 5 для версии шифрования 2, а для версий 3 и более вычисляется из Length как число байт в ключе
-	/// </summary>
+	    /// <summary>
+	    /// вычисляет ключ шифрования
+	    ///
+	    /// Алгоритм:
+	    /// Если длина строки больше 32 символов, обрезает строку до 32 символов
+	    /// если меньше, то строка дополняется до 32 символов, символами из следующей строки (строка дополнения):
+	    /// < 28 BF 4E 5E 4E 75 8A 41 64 00 4E 56 FF FA 01 08
+	    /// 2E 2E 00 B6 D0 68 3E 80 2F 0C A9 FE 64 53 69 7A >
+	    /// например, если длина n, то дополняется 32 - n символами
+	    /// Если пароль пустой, то берется вся строка дополнения
+	    /// Собирается строка для MD5 хеш-функции (смотри класс MD5), начинается со строки пароля
+	    /// Добавляется строка O
+	    /// Флаги P преобразуются в массив из 4х байт (младший впереди) и добавляется к строке MD5
+	    /// Добавляется первая строка из id
+	    /// Если версия шифрования 4 или больше и метаданные не зашифрованы, то 0xffffffff добавляется к строке MD5
+	    /// Вычисляется хеш
+	    /// Если версия шифрования 3 или больше, то 50 раз повторяется:
+	    /// у предыдущего результата хеша берется n байт (n - число байт в ключе, вычисляется из Length) и от этого значения еще раз вычисляется MD5
+	    /// У полученной строки байт берется n байт как ключ шифрования,
+	    /// где n = 5 для версии шифрования 2, а для версий 3 и более вычисляется из Length как число байт в ключе
+	    /// </summary>
         /// <param name="pass"> строка пароля</param>
         /// <returns>ключ шифрования</returns>
         public static byte[] ComputeDecryptionKey(string pass)
         {
-	    byte[] key = PadString(pass);
+	        byte[] key = PadString(pass);
             key = key.Concat(O).ToArray();
-            key = key.Concat(BitConverter.GetBytes(P)).ToArray();
+            byte[] bytesP = BitConverter.GetBytes(P);
+            if (!BitConverter.IsLittleEndian)
+                Array.Reverse(bytesP);
+            key = key.Concat(bytesP).ToArray();
             key = key.Concat(id0).ToArray();
             byte[] ff = new byte[] { 255, 255, 255, 255 };
             if ((R == 4) || (encryptMetadata == false))
                 key = key.Concat(ff).ToArray();
             key = MD5Hash(key);
-	    encryptionKey = key;
+	        encryptionKey = key;
             return key;
         }
 
@@ -432,7 +436,7 @@ namespace PdfCS
         public static byte[] ComputeUserPasswordV2(string pass)
         {
             return DecodeRC4(
-                PadString(pass), 
+                PadString(pass),
                 ComputeDecryptionKey(pass)
             );
         }
