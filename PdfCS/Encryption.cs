@@ -184,6 +184,10 @@ namespace PdfCS
             if (R == 2)
             {
                 temp = ComputeUserPasswordV2(pass);
+		/*		Console.Write("\nu: ");
+		PrintBytes(temp);
+		Console.Write("U: ");
+		PrintBytes(U);*/
                 return temp.SequenceEqual(U);
             }
             else if (R >= 3)
@@ -193,6 +197,13 @@ namespace PdfCS
             }
             return false;
         }
+
+	private static void PrintBytes(byte[] b)
+	{
+	    for (int i = 0; i < b.Length; i++)
+		Console.Write(Convert.ToString(b[i], 16) + " ");
+	    Console.WriteLine();
+	}
 
         /// <summary>
         /// заглушка
@@ -284,7 +295,9 @@ namespace PdfCS
             U = ((char[])param["U"]).Select<char, byte>(x => (byte)x).ToArray();
 	        P = (int)param["P"];
             if (param.ContainsKey("encryptMetadata"))
-		        encryptMetadata = (bool)param["encryptMetadata"];
+		encryptMetadata = (bool)param["encryptMetadata"];
+	    else
+		encryptMetadata = true;
 
             if ((V < 2 && R != 2) || ((V == 2 || V == 3) && R != 3) || (V == 4 && R != 4))
                 throw new Exception("Неверная версия шифрования/код алгоритма");
@@ -363,7 +376,7 @@ namespace PdfCS
         /// </summary>
         /// <param name="s">пароль владельца || пароль пользователя</param>
         /// <returns>возвращает дополненную строку</returns>
-        private static byte[] PadString(string s)
+        public static byte[] PadString(string s)
         {
             byte[] ext = {
                 0x28, 0xBF, 0x4E, 0x5E, 0x4E, 0x75, 0x8A, 0x41,
@@ -492,7 +505,7 @@ namespace PdfCS
         /// <param name="objNum">номер</param>
         /// <param name="genNum">поколение</param>
         /// <returns>дешифрованный объект char[] или byte[], тип вывода соответсвует o</returns>
-        public static object DecryptObject(object o, int objNum, int genNum, bool aes)
+        public static object DecryptObject(object o, int objNum, int genNum, bool aes=false)
         {
             byte[] obj;
             if (o.GetType() == typeof(char[]))
