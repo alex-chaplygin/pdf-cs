@@ -168,13 +168,13 @@ namespace PdfCS
         }
 
         /// <summary>
-	/// Аутентификация пользователя
-	///
-        /// В зависимости от версии шифрования вызывает
+	    /// Аутентификация пользователя
+	    ///
+        /// 1. В зависимости от версии шифрования вызывает
         /// Вычисление строки пароля пользователя #44 (2 версия)
         /// Вычисление строки пароля пользователя #45 (для версии шифрования 3 и выше)
-        /// Сравниваем полученную строку со строкой U, для версии 3 и выше сравниваем только 16 байт
-        /// Если значения равны, то аутентификация успешная
+        /// 2. Сравниваем полученную строку со строкой U, для версии 3 и выше сравниваем только 16 байт
+        /// 3. Если значения равны, то аутентификация успешная
         /// </summary>
         /// <param name="pass">Пароль пользователя</param>
         /// <returns>Успешная ли аутентификация</returns>
@@ -183,19 +183,13 @@ namespace PdfCS
             byte[] temp;
             if (R == 2)
             {
-                temp = PadString(pass);
-                for (int i = 0; i < temp.Length; i++)
-                    if (temp[i] != U[i])
-                        return false;
-                return true;
+                temp = ComputeUserPasswordV2(pass);
+                return temp.SequenceEqual(U);
             }
             else if (R >= 3)
             {
                 temp = ComputeUserPasswordV3(pass);
-                for (int i = 0; i < 16; i++)
-                    if (temp[i] != U[i])
-                        return false;
-                return true;
+                return temp.Take(16).SequenceEqual(U.Take(16));
             }
             return false;
         }
@@ -236,7 +230,9 @@ namespace PdfCS
         public static void Init(Dictionary<string, object> encrypt, object[] id)
         {
             Filter = (string)encrypt["Filter"];
-	    
+
+            id0 = (byte[])id[0];
+
             V = (int)encrypt["V"];
             if (encrypt.ContainsKey("SubFilter"))
                 SubFilter = (string)encrypt["SubFilter"];
@@ -284,11 +280,11 @@ namespace PdfCS
         {
             R = (int)param["R"];
             V = (int)param["V"];
-	    O = ((char[])param["O"]).Select<char, byte>(x => (byte)x).ToArray();
+	        O = ((char[])param["O"]).Select<char, byte>(x => (byte)x).ToArray();
             U = ((char[])param["U"]).Select<char, byte>(x => (byte)x).ToArray();
-	    P = (int)param["P"];
+	        P = (int)param["P"];
             if (param.ContainsKey("encryptMetadata"))
-		encryptMetadata = (bool)param["encryptMetadata"];
+		        encryptMetadata = (bool)param["encryptMetadata"];
 
             if ((V < 2 && R != 2) || ((V == 2 || V == 3) && R != 3) || (V == 4 && R != 4))
                 throw new Exception("Неверная версия шифрования/код алгоритма");
@@ -370,61 +366,63 @@ namespace PdfCS
         private static byte[] PadString(string s)
         {
             byte[] ext = {
-		0x28, 0xBF, 0x4E, 0x5E, 0x4E, 0x75, 0x8A, 0x41,
-		0x64, 0x00, 0x4E, 0x56, 0xFF, 0xFA, 0x01, 0x08,
-		0x2E, 0x2E, 0x00, 0xB6, 0xD0, 0x68, 0x3E, 0x80,
-		0x2F, 0x0C, 0xA9, 0xFE, 0x64, 0x53, 0x69, 0x7A
-	    };
-	    byte[] o = new byte[32];
-	    for (int i = 0; i < 32; i++)
-		if (i >= s.Length)
-		    o[i] = ext[i - s.Length];
-		else
-		    o[i] = (byte)s[i];
+                0x28, 0xBF, 0x4E, 0x5E, 0x4E, 0x75, 0x8A, 0x41,
+                0x64, 0x00, 0x4E, 0x56, 0xFF, 0xFA, 0x01, 0x08,
+                0x2E, 0x2E, 0x00, 0xB6, 0xD0, 0x68, 0x3E, 0x80,
+                0x2F, 0x0C, 0xA9, 0xFE, 0x64, 0x53, 0x69, 0x7A
+            };
+            byte[] o = new byte[32];
+            for (int i = 0; i < 32; i++)
+                if (i >= s.Length)
+                    o[i] = ext[i - s.Length];
+                else
+                    o[i] = (byte)s[i];
             return o;
         }
 
-	/// <summary>
-	///   вычисляет ключ шифрования
-	///
-	///  Алгоритм:
-	///
-	/// Если длина строки больше 32 символов, обрезает строку до 32 символов
-	/// если меньше, то строка дополняется до 32 символов, символами из следующей строки (строка дополнения):
-	/// < 28 BF 4E 5E 4E 75 8A 41 64 00 4E 56 FF FA 01 08
-	/// 2E 2E 00 B6 D0 68 3E 80 2F 0C A9 FE 64 53 69 7A >
-	/// например, если длина n, то дополняется 32 - n символами
-	/// Если пароль пустой, то берется вся строка дополнения
-	/// Собирается строка для MD5 хеш-функции (смотри класс MD5), начинается со строки пароля
-	/// Добавляется строка O
-	/// Флаги P преобразуются в массив из 4х байт (младший впереди) и добавляется к строке MD5
-	/// Добавляется первая строка из id
-	/// Если версия шифрования 4 или больше и метаданные не зашифрованы, то 0xffffffff добавляется к строке MD5
-	/// Вычисляется хеш
-	/// Если версия шифрования 3 или больше, то 50 раз повторяется:
-	/// у предыдущего результата хеша берется n байт (n - число байт в ключе, вычисляется из Length) и от этого значения еще раз вычисляется MD5
-	/// У полученной строки байт берется n байт как ключ шифрования,
-	/// где n = 5 для версии шифрования 2, а для версий 3 и более вычисляется из Length как число байт в ключе
-	/// </summary>
+	    /// <summary>
+	    /// вычисляет ключ шифрования
+	    ///
+	    /// Алгоритм:
+	    /// Если длина строки больше 32 символов, обрезает строку до 32 символов
+	    /// если меньше, то строка дополняется до 32 символов, символами из следующей строки (строка дополнения):
+	    /// < 28 BF 4E 5E 4E 75 8A 41 64 00 4E 56 FF FA 01 08
+	    /// 2E 2E 00 B6 D0 68 3E 80 2F 0C A9 FE 64 53 69 7A >
+	    /// например, если длина n, то дополняется 32 - n символами
+	    /// Если пароль пустой, то берется вся строка дополнения
+	    /// Собирается строка для MD5 хеш-функции (смотри класс MD5), начинается со строки пароля
+	    /// Добавляется строка O
+	    /// Флаги P преобразуются в массив из 4х байт (младший впереди) и добавляется к строке MD5
+	    /// Добавляется первая строка из id
+	    /// Если версия шифрования 4 или больше и метаданные не зашифрованы, то 0xffffffff добавляется к строке MD5
+	    /// Вычисляется хеш
+	    /// Если версия шифрования 3 или больше, то 50 раз повторяется:
+	    /// у предыдущего результата хеша берется n байт (n - число байт в ключе, вычисляется из Length) и от этого значения еще раз вычисляется MD5
+	    /// У полученной строки байт берется n байт как ключ шифрования,
+	    /// где n = 5 для версии шифрования 2, а для версий 3 и более вычисляется из Length как число байт в ключе
+	    /// </summary>
         /// <param name="pass"> строка пароля</param>
         /// <returns>ключ шифрования</returns>
         public static byte[] ComputeDecryptionKey(string pass)
         {
-	    byte[] key = PadString(pass);
+	        byte[] key = PadString(pass);
             key = key.Concat(O).ToArray();
-            key = key.Concat(BitConverter.GetBytes(P)).ToArray();
+            byte[] bytesP = BitConverter.GetBytes(P);
+            if (!BitConverter.IsLittleEndian)
+                Array.Reverse(bytesP);
+            key = key.Concat(bytesP).ToArray();
             key = key.Concat(id0).ToArray();
             byte[] ff = new byte[] { 255, 255, 255, 255 };
             if ((R == 4) || (encryptMetadata == false))
                 key = key.Concat(ff).ToArray();
             key = MD5Hash(key);
-	    encryptionKey = key;
+	        encryptionKey = key;
             return key;
         }
 
         /// <summary>
         /// Вычисляет строку для пароля пользователя (для сравнения с U), версия шифрования 2.
-	///
+	    ///
         /// Алгоритм:
         /// 1. Вычислить ключ шифрования (Вычисление ключа шифрования #42) и сохранить его;
         /// 2. С помощью алгоритма RC4 (Дешифровка RC4 #38) зашифровать строку полученную
@@ -437,15 +435,10 @@ namespace PdfCS
         /// </returns>
         public static byte[] ComputeUserPasswordV2(string pass)
         {
-            byte[] key = ComputeDecryptionKey(pass);
-            byte[] result;
-
-            if (pass.Length < 32)
-                result = PadString(pass);
-            else
-                result = Encoding.UTF8.GetBytes(pass.Substring(0, 32));
-            encryptionKey = result;
-            return DecodeRC4(result, key);
+            return DecodeRC4(
+                PadString(pass),
+                ComputeDecryptionKey(pass)
+            );
         }
 
         /// <summary>

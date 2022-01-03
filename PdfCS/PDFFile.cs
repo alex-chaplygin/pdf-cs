@@ -179,7 +179,7 @@ namespace PdfCS
 		Encryption.Init((Dictionary<string, object>)LoadLink(trailer["Encrypt"]), (object[])trailer["ID"]);
             if (trailer.ContainsKey("Prev"))
             {
-                stream.Seek((long)trailer["Prev"], SeekOrigin.Begin);
+                stream.Seek(Convert.ToInt64(trailer["Prev"]), SeekOrigin.Begin);
 		parser.NextChar();
                 ReadCrossReferenceTable();
             }
