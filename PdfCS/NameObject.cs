@@ -23,5 +23,10 @@ namespace PdfCS
 	    NameObject o = (NameObject)obj;
             return name == o.name;
         }
+
+	public override int GetHashCode()
+	{
+	    return name.GetHashCode();
+	}
     }
 }
