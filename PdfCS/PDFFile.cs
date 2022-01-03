@@ -341,7 +341,7 @@ namespace PdfCS
             long position;
             position = stream.Position; //запоминаем позицию потока
             object o = parser.ReadToken();
-            Console.WriteLine(o.ToString());
+            //Console.WriteLine(o.ToString());
             if (o is int) 
             {
                 stream.Seek(position, SeekOrigin.Begin); //возвращаем позицию потока назад
@@ -413,7 +413,7 @@ namespace PdfCS
                 count--;
             }
             int xrefOffset = int.Parse(new String(line.Reverse().ToArray()));
-	    Console.WriteLine($"xref offset = {xrefOffset}");
+	    //Console.WriteLine($"xref offset = {xrefOffset}");
             stream.Seek(xrefOffset, SeekOrigin.Begin);
 	    parser.NextChar();
             ReadCrossReferenceTable();
