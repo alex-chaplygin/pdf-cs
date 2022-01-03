@@ -28,7 +28,10 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 	    if (o is int)
 	    {
 		if ((int)o != (int)o2)
+		{
+		    Console.WriteLine($"\n {(int)o} != {(int)o2}");
 		    Fail();
+		}
 	    }
 	    else if (o is bool)
 	    {
