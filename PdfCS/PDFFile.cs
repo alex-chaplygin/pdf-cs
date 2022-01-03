@@ -94,12 +94,12 @@ namespace PdfCS
 	/// <summary>
         /// Ссылка на каталог
         /// </summary>
-        public static Tuple<int, int> root;
+        public static Tuple<int, int> root = null;
 
         /// <summary>
         /// Ссылка на информацию о документе (словарь)
         /// </summary>
-        public static Tuple<int, int> info;
+        public static Tuple<int, int> info = null;
 
         /// <summary>
         /// Метод чтения объекта кэша -
@@ -396,6 +396,8 @@ namespace PdfCS
             stream = s;
             parser = new Parser(stream);
             objectCache = new Dictionary<int, object>();
+	    root = null;
+	    info = null;
             ReadHeader();
 
             string line = "";
