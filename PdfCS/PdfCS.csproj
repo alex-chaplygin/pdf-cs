@@ -44,6 +44,8 @@
     <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Lexer.cs" />
+    <Compile Include="NameObject.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="PdfImage.cs" />
     <Compile Include="FontEncoding.cs" />
