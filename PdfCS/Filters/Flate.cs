@@ -52,10 +52,12 @@ namespace PdfCS
         {
 	    if (predictParams != null)
 		InitParams(predictParams);
-            Stream compStream = new MemoryStream(stream);
-            DeflateStream decompStream =  new DeflateStream(compStream, CompressionMode.Decompress);
-            byte[] decompressed = new byte[decompStream.Length];
-            decompStream.Read(decompressed, 0, (int)decompStream.Length);
+	    byte[] o = new byte[stream.Length - 2];
+	    Array.Copy(stream, 2, o, 0, o.Length);
+            DeflateStream ds =  new DeflateStream(new MemoryStream(o), CompressionMode.Decompress);
+	    MemoryStream ms = new MemoryStream();
+	    ds.CopyTo(ms);
+            byte[] decompressed = ms.ToArray();
             return Predictor.Decode(decompressed, predictor, colors, bpp, columns);
         }
     }
