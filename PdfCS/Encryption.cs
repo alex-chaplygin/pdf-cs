@@ -198,7 +198,7 @@ namespace PdfCS
             return false;
         }
 
-	private static void PrintBytes(byte[] b)
+	public static void PrintBytes(byte[] b)
 	{
 	    for (int i = 0; i < b.Length; i++)
 		Console.Write(Convert.ToString(b[i], 16) + " ");
