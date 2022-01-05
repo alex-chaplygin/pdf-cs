@@ -49,7 +49,8 @@ namespace PdfCS
 	/// <param name="columns">число точек в строке изображения</param>
 	public static byte[] Decode(byte[] data, int predictor, int colors, int bpp, int columns)
 	{
-	    return data;
+	    if (columns == 0)
+		return data;
 	    byte[] pred = new byte[colors];
             for (int i = 0; i < data.Length / colors; i++)
                 for (int j = 0; j < colors; j++)
