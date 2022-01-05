@@ -313,11 +313,10 @@ namespace PdfCS
                     throw new Exception("ReadToken встретилась скобка >");
             }
             else if (Lexer.IsDelimeter(lastChar))
-            {                
-                {
-                    NextChar();
-                    return lastChar;
-                }                
+            {
+		char c = lastChar;
+		NextChar();
+		return c;
             }
             else
                 return ReadId();

@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using PdfCS;
@@ -147,19 +147,7 @@ namespace PDFTest
 			byte[] bytemas = new byte[] { 0x90, 0x1f, 0xa0 };
 			TestToken("<901FA>", typeof(byte[]), bytemas);
 		}
-
-		[TestMethod]
-		public void ReadNameObjectTest1()
-		{
-			TestToken("/Name1", typeof(NameObject), new NameObject("Name"));
-		}
-
-		[TestMethod]
-		public void ReadNameObjectTest11()
-		{
-			TestToken("/.notdef", typeof(NameObject), new NameObject(".notdef"));
-		}
-	
+			
 		[TestMethod]
 		public void ReadArrayTest1()
 		{
@@ -181,7 +169,7 @@ namespace PDFTest
 		[TestMethod]
 		public void ReadDictionaryTest2()
 		{
-			TestToken(">>", typeof(string), "<<");
+			TestToken(">>", typeof(string), ">>");
 		}
 	
 		[TestMethod]
@@ -191,11 +179,120 @@ namespace PDFTest
 		}
 
 		[TestMethod]
+		public void ReadStringTest2()
+		{
+			TestToken("(string\\n)", typeof(char[]), "string\n".ToCharArray());
+		}
+
+		[TestMethod]
+		public void ReadStringTest3()
+		{
+			TestToken("(Strings may contain balanced parentheses ( ) and special characters ( * ! & } ^ % and so on ).)", typeof(char[]),
+				"Strings may contain balanced parentheses ( ) and special characters ( * ! & } ^ % and so on ).".ToCharArray());
+		}
+
+		[TestMethod]
+		public void ReadStringTest4()
+		{
+			TestToken("()", typeof(char[]), "".ToCharArray());
+		}
+
+		[TestMethod]
+		public void ReadStringTest5()
+		{
+			TestToken("(This string contains \\005two octal characters\\0109.)", typeof(char[]), ("This string contains \u0005two octal characters\u0008" + "9.").ToCharArray());
+		}
+
+		[TestMethod]
+		public void ReadStringTest6()
+		{
+			TestToken("(\\5\\05\\0010\\010)", typeof(char[]), ("\u0005\u0005\u0001" + "0" + "\u0008").ToCharArray());
+		}
+
+		[TestMethod]
+		public void ReadStringTest7()
+		{
+			TestToken("(aaa\\" + "\nbbb)", typeof(char[]), ("aaabbb").ToCharArray());
+		}
+
+		[TestMethod]
+		public void ReadStringTest8()
+		{
+			TestToken("(aaa\r\nbbb)", typeof(char[]), ("aaa\nbbb").ToCharArray());
+		}
+
+		[TestMethod]
 		public void ReadIdTest()
 		{
 		    TestToken("     obj", typeof(string), "obj");
 		    TestToken("     stream", typeof(string), "stream");
 		    TestToken("     Tj", typeof(string), "Tj");
+		}
+
+		[TestMethod]
+		public void ReadNameObjectTest1()
+		{
+			TestToken("/Name1", typeof(NameObject), new NameObject("Name1"));
+		}
+
+		[TestMethod]
+		public void ReadNameObjectTest2()
+		{
+			TestToken("/.notdef", typeof(NameObject), new NameObject(".notdef"));
+		}
+
+		[TestMethod]
+		public void ReadNameObjectTest3()
+		{
+			TestToken("/ASomewhatLongerName", typeof(NameObject), new NameObject("ASomewhatLongerName"));
+		}
+
+	[TestMethod]
+		public void ReadNameObjectTest4()
+		{
+			TestToken("/A;Name_With-VariousCharacters?", typeof(NameObject), new NameObject("A;Name_With-VariousCharacters?"));
+		}
+
+	[TestMethod]
+		public void ReadNameObjectTest5()
+		{
+			TestToken("/1.2", typeof(NameObject), new NameObject("1.2"));
+		}
+
+	[TestMethod]
+		public void ReadNameObjectTest6()
+		{
+			TestToken("/$$", typeof(NameObject), new NameObject("$$"));
+		}
+
+	[TestMethod]
+		public void ReadNameObjectTest7()
+		{
+			TestToken("/@pattern", typeof(NameObject), new NameObject("@pattern"));
+		}
+
+	[TestMethod]
+		public void ReadNameObjectTest8()
+		{
+			TestToken("/lime#20Green", typeof(NameObject), new NameObject("lime Green"));
+		}
+
+	[TestMethod]
+		public void ReadNameObjectTest9()
+		{
+			TestToken("/paired#28#29parentheses", typeof(NameObject), new NameObject("paired()parentheses"));
+		}
+
+	[TestMethod]
+		public void ReadNameObjectTest10()
+		{
+			TestToken("/The_Key_of_F#23_Minor", typeof(NameObject), new NameObject("The_Key_of_F#_Minor"));
+		}
+
+	[TestMethod]
+		public void ReadNameObjectTest11()
+		{
+			TestToken("/A#42", typeof(NameObject), new NameObject("AB"));
 		}
 	}
 }

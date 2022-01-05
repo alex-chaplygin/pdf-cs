@@ -1,4 +1,5 @@
 using System;
+using PdfCS;
 
 namespace Microsoft.VisualStudio.TestTools.UnitTesting
 {
@@ -38,6 +39,11 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 		if ((bool)o != (bool)o2)
 		    Fail();
 	    }
+	    else if (o is char)
+	    {
+		if ((char)o != (char)o2)
+		    Fail();
+	    }
 	    else if (o is string)
 	    {
 		if ((string)o != (string)o2)
@@ -47,6 +53,14 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 	    {
 		if ((double)o != (double)o2)
 		    Fail();
+	    }
+	    else if (o is NameObject)
+	    {
+		if (!o.Equals(o2))
+		{
+		    Console.WriteLine($"NameObject {o.ToString()} {o2.ToString()}");
+		    Fail();
+		}
 	    }
 	    else 
 		if (o != o2)
