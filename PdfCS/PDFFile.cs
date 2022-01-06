@@ -176,7 +176,11 @@ namespace PdfCS
             if (trailer.ContainsKey("Info")  && info == null)
                 info = (Tuple<int, int>)trailer["Info"];
             if (trailer.ContainsKey("ID") && trailer.ContainsKey("Encrypt"))
+	    {
 		Encryption.Init((Dictionary<string, object>)LoadLink(trailer["Encrypt"]), (object[])trailer["ID"]);
+		if (!Encryption.UserAuthentificate(""))
+                    throw new Exception("Требуется пароль");
+	    }
             if (trailer.ContainsKey("Prev"))
             {
                 stream.Seek(Convert.ToInt64(trailer["Prev"]), SeekOrigin.Begin);
