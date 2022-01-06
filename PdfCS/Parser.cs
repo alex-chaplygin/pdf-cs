@@ -575,9 +575,11 @@ namespace PdfCS
             value = ReadToken();
             if (!(value is int))
                 throw new Exception("Неверный номер объекта (objNum)");
+	    int objNum = (int)value;
             value = ReadToken();
             if (!(value is int))
                 throw new Exception("Неверный номер поколения (genNum)");
+	    int genNum = (int)value;
             value = ReadToken();
             if (value is string && (string)value != "obj")
                 throw new Exception("Ожидался параметр obj");            
@@ -586,7 +588,7 @@ namespace PdfCS
             if (value is string && (string)value == "stream")
             {
                 dict = (Dictionary<string, object>)obj;
-                value = ReadStream(dict);
+                value = ReadStream(dict, objNum, genNum);
                 return value;
             }
             else if (value is string && (string)value == "endobj")
@@ -641,7 +643,7 @@ namespace PdfCS
         /// </summary>
         /// <param name="dict">данные из объекта (словарь)</param>
         /// <returns>массив байт, полученный после применения всех фильтров</returns>
-        public byte[] ReadStream(Dictionary<string, object> dict)
+        public byte[] ReadStream(Dictionary<string, object> dict, int objNum, int genNum)
         {
             object filters = null;
             object parameters = null;
@@ -690,6 +692,7 @@ namespace PdfCS
                     sparams.Add((Dictionary<string, object>)o);
             else
                 sparams.Add((Dictionary<string, object>)parameters);
+	    array = (byte[])Encryption.DecryptObject(array, objNum, genNum);
             array = ApplyFilter(array, sfilters, sparams);
             return array;
         }
