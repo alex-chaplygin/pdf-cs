@@ -429,7 +429,9 @@ namespace PdfCS
             if ((R == 4) || (encryptMetadata == false))
                 key = key.Concat(ff).ToArray();
             key = MD5Hash(key);
-	        encryptionKey = key;
+	    encryptionKey = key;
+	    Console.Write("Key = ");
+	    PrintBytes(encryptionKey);
             return key;
         }
 
@@ -508,6 +510,8 @@ namespace PdfCS
         public static object DecryptObject(object o, int objNum, int genNum, bool aes=false)
         {
             byte[] obj;
+	    if (R < 2)
+		return o;
             if (o.GetType() == typeof(char[]))
                 obj = ((char[])o).Select(x => (byte)x).ToArray();
             else
@@ -515,6 +519,8 @@ namespace PdfCS
             List<byte> key = encryptionKey.ToList();
             key.AddRange(IntToBytes(objNum, 3));
             key.AddRange(IntToBytes(genNum, 2));
+	    Console.Write("Hash = ");
+	    PrintBytes(key.ToArray());
             if (aes)
                 key.AddRange(new List<byte> {0x73, 0x41, 0x6c, 0x54});
             byte[] hash = MD5.Create().ComputeHash(key.ToArray()).Take(16).ToArray();
