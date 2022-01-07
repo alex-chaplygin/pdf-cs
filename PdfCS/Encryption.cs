@@ -482,11 +482,11 @@ namespace PdfCS
                 Array.Reverse(bytes);
             if (bytes.Length < num)
             {
-                return Enumerable.Repeat((byte)0x00, num - bytes.Length).Concat(bytes).ToArray();
+                return bytes.Concat(Enumerable.Repeat((byte)0x00, num - bytes.Length)).ToArray();
             }
             if (bytes.Length > num)
             {
-                return bytes.Skip(bytes.Length - num).ToArray();
+                return bytes.Take(num).ToArray();
             }
             return bytes;
         }
