@@ -7,9 +7,9 @@ namespace PdfCS
     /// </summary>
     public class RC4
     {
-        static byte[] S = new byte[256];
-        static int x = 0;
-        static int y = 0;
+        static byte[] S;
+        static int x;
+        static int y;
 	
         /// <summary>
         /// Метод (рас)шифровки RC4
@@ -19,6 +19,9 @@ namespace PdfCS
         /// <returns>зашифрованные данные</returns>
         public static byte[] Decode(byte[] word, byte[] key)
         {
+	    S = new byte[256];
+	    x = 0;
+	    y = 0;
             int j = 0;
             for (int i = 0; i < 256; i++)
                 S[i] = (byte)i;
