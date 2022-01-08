@@ -21,6 +21,7 @@
   <ItemGroup>
     <Compile Include="FontEncodingTest.cs" />
     <Compile Include="ParserTest.cs" />
+    <Compile Include="PredictorTest.cs" />
     <Compile Include="LexerTest.cs" />
     <Compile Include="BitReaderTest.cs" />
     <Compile Include="EncryptionTest.cs" />
