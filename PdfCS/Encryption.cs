@@ -498,7 +498,7 @@ namespace PdfCS
         /// 2. Добавляем 3 байта от objNum
         /// 3. Добавляем 2 байта от genNum
         /// 4. Если aes, добавляем дополнительные 4 байта
-        /// 5. Получаем 16 байт MD5 из ключа
+        /// 5. Получаем n + 5 (максимум 16) байт MD5 из ключа
         /// 6. Передаем объект и полученный хэш в соответсвующие типу кодировки методы
         /// 7. Преобразуем формат результата для соответствия входному типу
         /// 8. Возвращаем результат
@@ -517,18 +517,26 @@ namespace PdfCS
             else
                 obj = (byte[])o;
             List<byte> key = encryptionKey.ToList();
+	    Console.WriteLine($"objNum = {objNum} genNum = {genNum}");
             key.AddRange(IntToBytes(objNum, 3));
             key.AddRange(IntToBytes(genNum, 2));
-	    Console.Write("Hash = ");
+	    Console.Write("Key = ");
 	    PrintBytes(key.ToArray());
             if (aes)
                 key.AddRange(new List<byte> {0x73, 0x41, 0x6c, 0x54});
-            byte[] hash = MD5.Create().ComputeHash(key.ToArray()).Take(16).ToArray();
+            byte[] hash = MD5.Create().ComputeHash(key.ToArray());
+	    Console.Write("MD5 = ");
+	    PrintBytes(hash);
+	    int n = key.Count;
+	    if (n > 16)
+		n = 16;
+	    Console.Write("RC4 key = ");
+	    PrintBytes(hash.Take(n).ToArray());
             byte[] result;
             if (aes) 
-                result = DecodeAES(obj, hash, ((byte[])o).Take(16).ToArray());
+                result = DecodeAES(obj, hash.Take(n).ToArray(), ((byte[])o).Take(16).ToArray());
             else 
-                result = DecodeRC4(obj, hash);
+                result = DecodeRC4(obj, hash.Take(n).ToArray());
             if (o.GetType() == typeof(char[]))
                 return result.Select(x => (char)x).ToArray();
             return result;
