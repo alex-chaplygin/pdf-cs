@@ -92,6 +92,31 @@ namespace PdfCS
             /// Цвет обводки пути
             /// </summary>
             public Color strokeColor;
+
+	    /// <summary>
+            /// Регион отсечения
+            /// </summary>
+            public Region clippingRegion;
+
+            /// <summary>
+            /// Текущий путь
+            /// </summary>
+            public GraphicsPath currentPath;
+
+            /// <summary>
+            /// Первая точка пути
+            /// </summary>
+            public PointF pathFirstPoint;
+
+            /// <summary>
+            /// размещение следующего символа, относительно предыдущего по горизонтали
+            /// </summary>
+            public double displacementX;
+
+            /// <summary>
+            /// размещение следующего символа, относительно предыдущего по вертикали
+            /// </summary>
+            public double displacementY;
         }
 
         /// <summary>
@@ -108,16 +133,6 @@ namespace PdfCS
         /// Прямоуголник страницы
         /// </summary>
         private static Rectangle mediaBox;
-
-        /// <summary>
-        /// Текущий путь
-        /// </summary>
-        private static GraphicsPath currentPath;
-
-        /// <summary>
-        /// Первая точка пути
-        /// </summary>
-        private static PointF pathFirstPoint;
 
         /// <summary>
         /// функция оператора графики
@@ -162,6 +177,10 @@ namespace PdfCS
             {"v", new Operator(AddCurve2)},
             {"y", new Operator(AddCurve1)},
 	    {"n", new Operator(() => {}) },
+	    {"W", new Operator(SetClipPath) },
+            {"W*", new Operator(SetClipPath2) },
+            {"d0", new Operator(SetDisplacement)},
+            {"d1", new Operator(SetDisplacementBoundingBox) }
         };
 
         /// <summary>
@@ -412,8 +431,8 @@ namespace PdfCS
             double oy;
             currentState.CTM.MultVector(x, y, out ox, out oy);
 
-            pathFirstPoint = new PointF((float)ox, (float)oy);
-            currentPath = new GraphicsPath();
+            currentState.pathFirstPoint = new PointF((float)ox, (float)oy);
+            currentState.currentPath = new GraphicsPath();
         }
 
         /// <summary>
@@ -433,15 +452,15 @@ namespace PdfCS
             PointF lastPoint;
             try
             {
-                lastPoint = currentPath.GetLastPoint();
+                lastPoint = currentState.currentPath.GetLastPoint();
             }
             catch (Exception)
             {
-                lastPoint = pathFirstPoint;
+                lastPoint = currentState.pathFirstPoint;
             }
-            if (currentPath == null)
-                currentPath = new GraphicsPath();
-            currentPath.AddLine(lastPoint, new PointF((float)ox, (float)oy));
+            if (currentState.currentPath == null)
+                currentState.currentPath = new GraphicsPath();
+            currentState.currentPath.AddLine(lastPoint, new PointF((float)ox, (float)oy));
         }
 
         /// <summary>
@@ -490,17 +509,17 @@ namespace PdfCS
             PointF lastPoint;
             try
             {
-                lastPoint = currentPath.GetLastPoint();
+                lastPoint = currentState.currentPath.GetLastPoint();
             }
             catch (Exception)
             {
-                lastPoint = pathFirstPoint;
+                lastPoint = currentState.pathFirstPoint;
             }
-            if (currentPath == null)
-                currentPath = new GraphicsPath();
+            if (currentState.currentPath == null)
+                currentState.currentPath = new GraphicsPath();
 
-            if (lastPoint != pathFirstPoint)
-                currentPath.AddLine(lastPoint, pathFirstPoint);
+            if (lastPoint != currentState.pathFirstPoint)
+                currentState.currentPath.AddLine(lastPoint, currentState.pathFirstPoint);
         }
 
         private static void SetStrokeColor()
@@ -521,8 +540,8 @@ namespace PdfCS
         private static void FillPath()
         {
             ClosePath();
-            currentPath.FillMode = FillMode.Winding;
-            graphics.FillPath(new SolidBrush(currentState.fillColor), currentPath);
+            currentState.currentPath.FillMode = FillMode.Winding;
+            graphics.FillPath(new SolidBrush(currentState.fillColor), currentState.currentPath);
         }
 
         /// <summary>
@@ -532,8 +551,8 @@ namespace PdfCS
 	private static void FillPathEven()
         {
             ClosePath();
-            currentPath.FillMode = FillMode.Alternate;
-            graphics.FillPath(new SolidBrush(currentState.fillColor), currentPath);
+            currentState.currentPath.FillMode = FillMode.Alternate;
+            graphics.FillPath(new SolidBrush(currentState.fillColor), currentState.currentPath);
         }
 
 	/// <summary>
@@ -543,11 +562,11 @@ namespace PdfCS
         /// </summary>
         private static void FillAndThenStrokePathNonZero()
         {
-            currentPath.FillMode = FillMode.Winding;
-            graphics.FillPath(new SolidBrush(currentState.fillColor), currentPath);
+            currentState.currentPath.FillMode = FillMode.Winding;
+            graphics.FillPath(new SolidBrush(currentState.fillColor), currentState.currentPath);
 
             graphics.DrawPath(new Pen(currentState.strokeColor) {
-                Width = (float)(currentState.lineWidth * currentState.CTM.GetValues()[0]) }, currentPath);
+                Width = (float)(currentState.lineWidth * currentState.CTM.GetValues()[0]) }, currentState.currentPath);
         }
 
         /// <summary>
@@ -569,11 +588,11 @@ namespace PdfCS
         /// </summary>
         private static void FillAndThenStrokePathEvenOddRule()
         {
-            currentPath.FillMode = FillMode.Alternate;
-            graphics.FillPath(new SolidBrush(currentState.fillColor), currentPath);
+            currentState.currentPath.FillMode = FillMode.Alternate;
+            graphics.FillPath(new SolidBrush(currentState.fillColor), currentState.currentPath);
 
             graphics.DrawPath(new Pen(currentState.strokeColor) {
-                Width = (float)(currentState.lineWidth * currentState.CTM.GetValues()[0]) }, currentPath);
+                Width = (float)(currentState.lineWidth * currentState.CTM.GetValues()[0]) }, currentState.currentPath);
         }
 
         /// <summary>
@@ -593,7 +612,9 @@ namespace PdfCS
         /// </summary>
         private static void StrokePath()
         {
-            graphics.DrawPath(new Pen(currentState.strokeColor) { Width = (float)(currentState.lineWidth * currentState.CTM.GetValues()[0]) }, currentPath);
+            graphics.DrawPath(new Pen(currentState.strokeColor) {
+		    Width = (float)(currentState.lineWidth * currentState.CTM.GetValues()[0])
+		}, currentState.currentPath);
         }
 
         /// <summary>
@@ -661,11 +682,11 @@ namespace PdfCS
             PointF lastPoint;
             try
             {
-                lastPoint = currentPath.GetLastPoint();
+                lastPoint = currentState.currentPath.GetLastPoint();
             }
             catch (Exception)
             {
-                lastPoint = pathFirstPoint;
+                lastPoint = currentState.pathFirstPoint;
             }
             double y3 = ReadNumber();
             double x3 = ReadNumber();
@@ -682,7 +703,7 @@ namespace PdfCS
             PointF p1 = new PointF((float)x1, (float)y1);
             PointF p2 = new PointF((float)x2, (float)y2);
             PointF p3 = new PointF((float)x3, (float)y3);
-            currentPath.AddBezier(p0, p1, p2, p3);
+            currentState.currentPath.AddBezier(p0, p1, p2, p3);
         }
 
         /// <summary>
@@ -697,11 +718,11 @@ namespace PdfCS
             PointF lastPoint;
             try
             {
-                lastPoint = currentPath.GetLastPoint();
+                lastPoint = currentState.currentPath.GetLastPoint();
             }
             catch (Exception)
             {
-                lastPoint = pathFirstPoint;
+                lastPoint = currentState.pathFirstPoint;
             }
             double y3 = ReadNumber();
             double x3 = ReadNumber();
@@ -715,7 +736,7 @@ namespace PdfCS
             PointF p1 = p0;
             PointF p2 = new PointF((float)x2, (float)y2);
             PointF p3 = new PointF((float)x3, (float)y3);
-            currentPath.AddBezier(p0, p1, p2, p3);
+            currentState.currentPath.AddBezier(p0, p1, p2, p3);
         }
 
         /// <summary>
@@ -730,11 +751,11 @@ namespace PdfCS
             PointF lastPoint;
             try
             {
-                lastPoint = currentPath.GetLastPoint();
+                lastPoint = currentState.currentPath.GetLastPoint();
             }
             catch (Exception)
             {
-                lastPoint = pathFirstPoint;
+                lastPoint = currentState.pathFirstPoint;
             }
             double y3 = ReadNumber();
             double x3 = ReadNumber();
@@ -748,7 +769,58 @@ namespace PdfCS
             PointF p1 = new PointF((float)x1, (float)y1);
             PointF p3 = new PointF((float)x3, (float)y3);
             PointF p2 = p3;
-            currentPath.AddBezier(p0, p1, p2, p3);
+            currentState.currentPath.AddBezier(p0, p1, p2, p3);
         }
+
+	/// <summary>
+        /// W
+        /// устанавливает путь отсечения используя правило nonzero winding (ненулевой контур)
+        /// текущий путь используется для отсечения(clipping) региона рисования
+        /// </summary>
+        private static void SetClipPath()
+        {
+            currentState.currentPath.FillMode = FillMode.Winding;
+            graphics.SetClip(currentState.currentPath);
+            currentState.clippingRegion = graphics.Clip;
+        }
+
+        /// <summary>
+        /// W*
+        /// устанавливает путь отсечения используя правило even-odd winding (четный-нечетный контур)
+        /// текущий путь используется для отсечения(clipping) региона рисования
+        /// </summary>
+        private static void SetClipPath2()
+        {
+            currentState.currentPath.FillMode = FillMode.Alternate;
+            graphics.SetClip(currentState.currentPath);
+            currentState.clippingRegion = graphics.Clip;           
+        }
+
+	/// <summary>
+        /// d0
+        /// wx wy
+        /// Устанавливает ширину глифа и объявляет, что описание глифа указывает как его форму, так и его цвет
+        /// </summary>
+        private static void SetDisplacement()
+        {
+            currentState.displacementX = ReadNumber();
+            currentState.displacementY = ReadNumber();
+        }
+
+        /// <summary>
+        /// d1
+        /// wx wy llx lly urx ury
+        /// Устанавливает ширину и ограничительную рамку глифа и объявляет, что описание глифа указывает только на его форму
+        /// </summary>
+        private static void SetDisplacementBoundingBox()
+        {
+            currentState.displacementX = ReadNumber();
+            currentState.displacementY = ReadNumber();
+            double llx = ReadNumber();
+            double lly = ReadNumber();
+            double urx = ReadNumber();
+            double ury = ReadNumber();
+            RectangleF boundingBox = new RectangleF((float)llx, (float)lly, (float)urx, (float)ury);
+        }	
     }
 }
