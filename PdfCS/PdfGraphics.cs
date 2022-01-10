@@ -152,22 +152,28 @@ namespace PdfCS
             {"sc", new Operator(SetFillColor)},
             {"f", new Operator(FillPath)},
             {"F", new Operator(FillPath)},
-	    {"f*", new Operator(FillPathEven)},
-	    {"B", new Operator(FillAndThenStrokePathNonZero)},
+        {"f*", new Operator(FillPathEven)},
+        {"B", new Operator(FillAndThenStrokePathNonZero)},
             {"B*", new Operator(FillAndThenStrokePathEvenOddRule)},
             {"b", new Operator(CloseFillAndThenStrokePathNonZero)},
             {"b*", new Operator(CloseFillAndThenStrokePathEvenOddRule)},
             {"'",  new Operator(MoveAndShowText)},
-	    {"c", new Operator(AddCurve3)},
+        {"c", new Operator(AddCurve3)},
             {"v", new Operator(AddCurve2)},
             {"y", new Operator(AddCurve1)},
-	    {"n", new Operator(() => {}) },
+        {"n", new Operator(() => {}) },
+            {"Do", new Operator(PaintObject) }
         };
 
         /// <summary>
         /// стек операндов команд
         /// </summary>
         private static Stack<object> operands;
+
+        /// <summary>
+        /// Словарь ресурсов
+        /// </summary>
+        private static Dictionary<string, object> resources;
 
         /// <summary>
         /// Инициализация графики
@@ -296,7 +302,7 @@ namespace PdfCS
         /// </summary>
         /// <param name="content">поток содержимого страницы (команды графики)</param>
         /// <param name="resources">словарь ресурсов страницы</param>
-        public static void Render(byte[] content, Dictionary<string, object> resources)
+        public static void Render(byte[] content, Dictionary<string, object> resource)
         {
             Parser parser = new Parser(new MemoryStream(content));
             parser.NextChar();
@@ -308,6 +314,8 @@ namespace PdfCS
                     return;
                 if (temp is string && commands.ContainsKey((string)temp))
                     commands[(string)temp]();
+                if (temp is Dictionary<string, object>)
+                    resources = (Dictionary<string, object>)temp;
                 else
                     operands.Push(temp);
             }
@@ -514,8 +522,8 @@ namespace PdfCS
         }
 
         /// <summary>
-	/// f
-	/// F
+        /// f
+        /// F
         /// Заполнение текущего пути с обходом контура non zero winding
         /// </summary>
         private static void FillPath()
@@ -526,17 +534,17 @@ namespace PdfCS
         }
 
         /// <summary>
-	/// f*
+        /// f*
         /// Заполнение текущего пути с обходом контура even-odd
         /// </summary>
-	private static void FillPathEven()
+        private static void FillPathEven()
         {
             ClosePath();
             currentPath.FillMode = FillMode.Alternate;
             graphics.FillPath(new SolidBrush(currentState.fillColor), currentPath);
         }
 
-	/// <summary>
+        /// <summary>
         /// Cначала заполняет контур с правилом не нулевого контура, потом обводит.
         /// 
         /// Operator - B
@@ -585,10 +593,10 @@ namespace PdfCS
         {
             ClosePath();
             FillAndThenStrokePathEvenOddRule();
-        }	
+        }
 
         /// <summary>
-	/// S
+        /// S
         /// Добавляет обводку к текущему пути
         /// </summary>
         private static void StrokePath()
@@ -649,8 +657,8 @@ namespace PdfCS
             int r = (int)operands.Pop();
             return Color.FromArgb(255, r, g, b);
         }
-	
-	/// <summary>
+
+        /// <summary>
         /// x1 y1 x2 y2 x3 y3 c
         /// Добавляет в текущий путь #66 кривую Безье
         /// p1, p2 - контрольные точки
@@ -749,6 +757,18 @@ namespace PdfCS
             PointF p3 = new PointF((float)x3, (float)y3);
             PointF p2 = p3;
             currentPath.AddBezier(p0, p1, p2, p3);
+        }
+
+        private static void PaintObject()
+        {
+            string param = (string)operands.Pop();
+            object stream = (Dictionary<string,object>)resources[param];
+            Matrix matrix = new Matrix();
+            double x = 0;
+            double y = 0;
+            currentState.CTM.MultVector(x, y, out x, out y);
+            if ((string)resources["Type"] == "XObject" && (string)resources["Subtype"] == "Image")
+                new PdfImage((Dictionary<string, object>)resources[param], (byte[])stream);
         }
     }
 }
