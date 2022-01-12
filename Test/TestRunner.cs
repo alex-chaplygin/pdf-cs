@@ -167,6 +167,7 @@ class TestRunner {
 	ParserTest par = new ParserTest();
 	BitReaderTest bit = new BitReaderTest();
 	ASCII85Test a = new ASCII85Test();
+	ASCIIHexTest ax = new ASCIIHexTest();
 	LZWTest lzw = new LZWTest();
         //--------------------------------------------------------------
  
