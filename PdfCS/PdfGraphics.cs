@@ -307,6 +307,7 @@ namespace PdfCS
             Parser parser = new Parser(new MemoryStream(content));
             parser.NextChar();
             object temp;
+            resources = resource;
             while (true)
             {
                 temp = parser.ReadToken();
@@ -314,8 +315,6 @@ namespace PdfCS
                     return;
                 if (temp is string && commands.ContainsKey((string)temp))
                     commands[(string)temp]();
-                if (temp is Dictionary<string, object>)
-                    resources = (Dictionary<string, object>)temp;
                 else
                     operands.Push(temp);
             }
@@ -762,13 +761,16 @@ namespace PdfCS
         private static void PaintObject()
         {
             string param = (string)operands.Pop();
-            object stream = (Dictionary<string,object>)resources[param];
+            object stream = ((Dictionary<string,object>)resources["XObject"])[param];
             Matrix matrix = new Matrix();
             double x = 0;
             double y = 0;
             currentState.CTM.MultVector(x, y, out x, out y);
-            if ((string)resources["Type"] == "XObject" && (string)resources["Subtype"] == "Image")
-                new PdfImage((Dictionary<string, object>)resources[param], (byte[])stream);
+            if ((string)resources["Type"] == "Image")
+            {
+                PdfImage image = new PdfImage((Dictionary<string, object>)resources[param], (byte[])stream);
+                graphics.DrawImage(image.bitmap, new Point());
+            }
         }
     }
 }
