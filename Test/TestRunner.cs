@@ -169,6 +169,7 @@ class TestRunner {
 	ASCII85Test a = new ASCII85Test();
 	ASCIIHexTest ax = new ASCIIHexTest();
 	LZWTest lzw = new LZWTest();
+	JBIG2Test jb = new JBIG2Test();
         //--------------------------------------------------------------
  
         #region Execute tests

@@ -75,6 +75,7 @@
     <Compile Include="Filters\JPEG2000\JPX.cs" />
     <Compile Include="Filters\JBIG2\GenericRegion.cs" />
     <Compile Include="Filters\JBIG2\JBIG2.cs" />
+    <Compile Include="Filters\JBIG2\JBIG2Segment.cs" />
     <Compile Include="Filters\CCITTFax.cs" />
     <Compile Include="Filters\Crypt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

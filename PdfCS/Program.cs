@@ -12,14 +12,18 @@ namespace PdfCS
         static void Main(string[] args)
         {
 	    PDFFile.Open(File.OpenRead(args[0]));
-	    Dictionary<string, object> dict;
-            for (int i = 0; i < PDFFile.xrefTable.Length; i++)
+	    Dictionary<string, object> dict = PDFFile.GetPage(1);
+	    foreach (var pair in dict)
+                    {
+                        Console.WriteLine($"{pair.Key} {pair.Value}");
+                    }
+	    /*            for (int i = 0; i < PDFFile.xrefTable.Length; i++)
             {
                 if (PDFFile.xrefTable[i].offset == 0)
                     continue;
                 var cur = PDFFile.GetObject(i, out dict);
                 Console.WriteLine($"Объект {i}: {cur.ToString()}");
-            }
+            }*/
         }
 
 	static void Print(byte[] arr)

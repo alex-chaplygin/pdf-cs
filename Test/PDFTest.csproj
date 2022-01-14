@@ -30,6 +30,7 @@
     <Compile Include="ASCII85Test.cs" />
     <Compile Include="LZWTest.cs" />
     <Compile Include="PDFFileTest.cs" />
+    <Compile Include="JBIG2Test.cs" />
   </ItemGroup>
 
 </Project>

@@ -34,6 +34,11 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 		    Fail();
 		}
 	    }
+	    else if (o is uint)
+	    {
+		if ((uint)o != (uint)o2)
+		    Fail();
+	    }
 	    else if (o is bool)
 	    {
 		if ((bool)o != (bool)o2)
@@ -42,6 +47,11 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 	    else if (o is char)
 	    {
 		if ((char)o != (char)o2)
+		    Fail();
+	    }
+	    else if (o is byte)
+	    {
+		if ((byte)o != (byte)o2)
 		    Fail();
 	    }
 	    else if (o is string)
