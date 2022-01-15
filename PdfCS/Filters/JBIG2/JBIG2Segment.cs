@@ -19,6 +19,11 @@ namespace PdfCS
         /// </summary>
         public byte flags;
 
+	/// <summary>
+        /// Тип сегмента
+        /// </summary>
+        public int type;
+	
         /// <summary>
         /// Число ссылок на другие сегменты
         /// </summary>
@@ -27,7 +32,7 @@ namespace PdfCS
         /// <summary>
         /// Массив из 4 байт, номера сегментов
         /// </summary>
-        public uint[] references;
+        public int[] references;
 
         /// <summary>
         /// Номер страницы
@@ -41,22 +46,22 @@ namespace PdfCS
 
         public JBIG2Segment(Stream stream)
         {
-            byte[] fourbytearray = new byte[4];
+	    byte[] fourbytearray = new byte[4];
 
             stream.Read(fourbytearray, 0, 4);
             Array.Reverse(fourbytearray);
             number = BitConverter.ToUInt32(fourbytearray, 0);
 
             flags = (byte) stream.ReadByte();
+            type = (byte) (flags << 2) >> 2;
             refCount = (byte) stream.ReadByte();
 
-            references = new uint[refCount];
+            int referencesLength = (byte) (refCount >> 5);
+
+            references = new int[referencesLength];
             for (int i = 0; i < references.Length; i++)
             {
-                stream.Read(fourbytearray, 0, 4);
-		Array.Reverse(fourbytearray);
-                uint n = BitConverter.ToUInt32(fourbytearray, 0);
-                references[i] = n;
+                references[i] = stream.ReadByte();
             }
 
             page = (byte)stream.ReadByte();
