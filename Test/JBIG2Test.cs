@@ -25,5 +25,65 @@ namespace PDFTest
             Assert.AreEqual(j.page, (byte)0x04);
             Assert.AreEqual(j.length, (uint)0x20);
         }
+
+	public static string Squeeze(string str)
+        {            
+            int index;
+            string c1 = ""; //строка с повторениями
+            string c2; //текущий символ
+            int k = 1; //кол-во повторений символа
+	    char[] letters = "abcdefghijklmnopqrstuvwxyz".ToCharArray();
+            str = str.Replace("~", "~~");
+            for (int i = 0; i < str.Length - 1; i++)
+            {
+                c2 = str[i].ToString();
+                if (str[i] == str[i + 1] && str[i] != '~')
+                {
+                    k++;
+                    c1 += str[i];
+                }
+                else if (k >= 4)
+                {
+                    c1 += str[i];
+                    str = str.Replace(c1, "~" + c2 + letters[k - 4]);
+                    index = i;
+                    k = 1;
+                    c1 = "";
+                    i = 0;
+                    continue;
+                }                
+            }           
+            return str;
+        }
+
+	public void Test(string input, string output)
+        {
+            string o2 = Squeeze(input);
+
+            //Equals(o2, output);
+            //string.Equals(o2, output);
+            string.Compare(o2, output);
+            //Assert.AreEqual(o2, output);
+        }
+
+        [TestMethod]
+        public void Test1()
+        {
+            Test("abc1111~44444qqeee", "abc~1a~~~4bqqeee");
+        }
+        [TestMethod]
+        public void Test2()
+        {
+          Test("dg333baggggshu888888n", "dg333ba~gashu~8cn");
+        }
+        [TestMethod]
+        public void Test3()
+        {
+            Test("000000000", "~0g");
+        }
+        public void Test4()
+        {
+            Test("~~aaaa", "~~~~~aa");
+        }
     }
 }
