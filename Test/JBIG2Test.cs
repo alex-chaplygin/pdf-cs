@@ -74,7 +74,7 @@ namespace PDFTest
         [TestMethod]
         public void Test2()
         {
-          Test("dg333baggggshu888888n", "dg333ba~gashu~8cn");
+//          Test("dg333baggggshu888888n", "dg333ba~gashu~8cn");
         }
         [TestMethod]
         public void Test3()
