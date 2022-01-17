@@ -19,7 +19,7 @@ namespace PDFTest
 
 	public void TestSequencesColors(byte[] encodedSequence, byte[] decodedSequence)
         {
-            CollectionAssert.AreEqual(Predictor.Decode(encodedSequence, 1, 2, 1, 3), decodedSequence);
+            CollectionAssert.AreEqual(Predictor.Decode(encodedSequence, 1, 3, 1, 2), decodedSequence);
         }
 
         [TestMethod]
