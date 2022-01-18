@@ -761,15 +761,14 @@ namespace PdfCS
         private static void PaintObject()
         {
             string param = (string)operands.Pop();
-            int link = (int)resources[param];
-            PDFFile.GetObject(link, out Dictionary<string, object> dict);
+            object link = ((Dictionary<string, object>)resources["XObject"])[param];
+            Dictionary<string, object> dict =  (Dictionary<string, object>)PDFFile.LoadLink(link);
             if ((string)dict["Type"] == "XObject" && (string)dict["Subtype"] == "Image")
             {
-                currentState.CTM.MultVector((double)dict["Width"], (double)dict["Height"], out double x, out double y);
-                dict["Width"] = x;
-                dict["Height"] = y;
-                PdfImage image = new PdfImage(dict, (byte[])((Dictionary<string, object>)resources["XObject"])[param]);
-                graphics.DrawImage(image.bitmap, new Point());
+                currentState.CTM.MultVector(0, 0, out double x, out double y);
+                currentState.CTM.MultVector((double)dict["Width"], (double)dict["Height"], out double xx, out double yy);
+                PdfImage image = new PdfImage(dict, (byte[])link);
+                graphics.DrawImage(image.bitmap, (float)x, (float)y, (float)xx, (float)yy);
             }
         }
     }
