@@ -758,16 +758,27 @@ namespace PdfCS
             currentPath.AddBezier(p0, p1, p2, p3);
         }
 
+        /// <summary>
+        /// отрисовка внешнего объекта
+        /// параметр - имя объекта, это имя является ключом в подсловаре XObject в словаре ресурсов
+        /// словарь ресурсов передается как параметр в Render его нужно сохранить в классе как поле
+        /// Dictionary<string, object> resources;
+        /// Значение по ключу в подсловаре XObject является ссылкой на объект - поток
+        /// Его загружаем из PDF файла.Если тип объекта (Type) - Image, то создаем объект PdfImage
+        /// и рисуем bitmap.Оконные координаты получаются путем умножения вектора (0, 0) на матрицу CTM
+        /// размеры изображения(оно может масштабироваться) получаются умножением вектора(1, 1) на матрицу CTM
+        /// нужно нарисовать изображение с новыми размерами, а не с исходными
+        /// </summary>
         private static void PaintObject()
         {
             string param = (string)operands.Pop();
             object link = ((Dictionary<string, object>)resources["XObject"])[param];
-            Dictionary<string, object> dict =  (Dictionary<string, object>)PDFFile.LoadLink(link);
+            byte[] stream =  (byte[])PDFFile.LoadLink(link, out Dictionary<string,object> dict);
             if ((string)dict["Type"] == "XObject" && (string)dict["Subtype"] == "Image")
             {
                 currentState.CTM.MultVector(0, 0, out double x, out double y);
                 currentState.CTM.MultVector((double)dict["Width"], (double)dict["Height"], out double xx, out double yy);
-                PdfImage image = new PdfImage(dict, (byte[])link);
+                PdfImage image = new PdfImage(dict, stream);
                 graphics.DrawImage(image.bitmap, (float)x, (float)y, (float)xx, (float)yy);
             }
         }
