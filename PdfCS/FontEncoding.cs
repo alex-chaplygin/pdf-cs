@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PdfCS
 {
@@ -17,7 +19,17 @@ namespace PdfCS
         /// </summary>
         public string[] encoding;
 
-private static Dictionary<string, int[]> standartCodes = new Dictionary<string, int[]>
+        /// <summary>
+        /// Таблица encodings
+        /// </summary>
+        public string[,] encodings = new string[headersForTable.Length, standartCodes.Count];
+
+        /// <summary>
+        /// Заголовки таблицы
+        /// </summary>
+        public static string[] headersForTable = { "Glyph", "StandardEncoding", "MacRomanEncoding", "WinAnsiEncoding", "PDFDocEncoding" };
+
+        private static Dictionary<string, int[]> standartCodes = new Dictionary<string, int[]>
         {
             {"A", new int[]{ 0101, 0101, 0101, 0101} },
             {"Agrave", new int[]{ -1, 0313, 0300, 0300 } },
@@ -213,7 +225,7 @@ private static Dictionary<string, int[]> standartCodes = new Dictionary<string, 
             {"quoteright", new int[]{ 0047, 0325, 0222, 0220 }},
             {"quotesinglbase", new int[]{ 0270, 0342, 0202, 0221 }},
             {"guotesingle", new int[]{ 0251, 0047, 0047, 0047 }},
-            {"r", new int[]{ 0162, 0162, 0162, 0162 }}, 
+            {"r", new int[]{ 0162, 0162, 0162, 0162 }},
             {"registered", new int[]{ -1, 0250, 0256, 0256 }},
             {"ring", new int[]{ 0312, 0373, -1, 0036 }},
             {"s", new int[]{ 0163, 0163, 0163, 0163 }},
@@ -252,7 +264,7 @@ private static Dictionary<string, int[]> standartCodes = new Dictionary<string, 
             {"zcaron", new int[]{ -1, -1, 0236, 0236 }},
             {"zero", new int[]{ 0060, 0060, 0060, 0060 }},
         };
-	
+
         /// <summary>
         /// Поля словаря:
         /// Type(необязательное) - должно быть "Encoding"
@@ -284,6 +296,28 @@ private static Dictionary<string, int[]> standartCodes = new Dictionary<string, 
                         continue;
                     }
                     encoding[(int)differences[startValueIndex] + i - startValueIndex - 1] = (string)differences[i];
+                }
+            }
+            FillEncoding(lastChar);
+        }
+
+        /// <summary>
+        /// Заполнение таблицы данными для последующего поиска.
+        /// </summary>
+        /// <param name="lastChar">Последний символ.</param>
+        private void FillEncoding(int lastChar)
+        {
+            encodings = new string[headersForTable.Length, lastChar + 1];
+
+            for (int i = 0; i < headersForTable.Length; i++)
+            {
+                encodings[i, 0] = headersForTable[i];
+                for (int j = 1; j <= lastChar; j++)
+                {
+                    if (i == 0)
+                        encodings[i, j] = standartCodes.ElementAt(j - 1).Key;
+                    else
+                        encodings[i, j] = standartCodes.ElementAt(j - 1).Value[i - 1].ToString();
                 }
             }
         }
