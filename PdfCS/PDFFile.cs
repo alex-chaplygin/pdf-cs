@@ -168,9 +168,9 @@ namespace PdfCS
         /// %%EOF
         /// </summary>
         /// 
-        private static void ReadTrailer()
+        private static void ReadTrailer(Dictionary<string, object> trailer)
         {
-            Dictionary<string, object> trailer = (Dictionary<string, object>)parser.ReadToken();
+//            Dictionary<string, object> trailer = (Dictionary<string, object>)parser.ReadToken();
 	    if (root == null)
 		root = (Tuple<int, int>)trailer["Root"];
             if (trailer.ContainsKey("Info")  && info == null)
@@ -245,13 +245,10 @@ namespace PdfCS
         public static void LoadXRefStream() //метод #36
         {
             Dictionary<string, object> dict;
-	    object o = parser.ReadIndirectObject(out dict); // метод 25
-            byte[] b = (byte[])o;
-            MemoryStream m = new MemoryStream();
-            m.Write(b, 0, b.Length);
-            m.Seek(0, SeekOrigin.Begin);
+            MemoryStream m = new MemoryStream((byte[])parser.ReadIndirectObject(out dict));
             int size = (int)dict["Size"];
             object[] W = (object[])dict["W"];
+	    Console.WriteLine($"XRef size = {size}");
 
             int[] val = new int[3];
 
@@ -292,7 +289,9 @@ namespace PdfCS
                     xrefTable[i].streamIndex = val[2]; //индекс объекта внутри потока
                     xrefTable[i].generation = 0; // номер поколения по умолчанию 0
                 }
+		Console.WriteLine($"num = {i} free = {xrefTable[i].free} comp = {xrefTable[i].compressed} ofs = {xrefTable[i].offset} gen = {xrefTable[i].generation} stream = {xrefTable[i].streamNum} index = {xrefTable[i].streamIndex}");
             }
+	    ReadTrailer(dict);
         }
 
 	/// <summary>
@@ -388,7 +387,7 @@ namespace PdfCS
                         xrefTable[index].free = true;
                 }
             }
-            ReadTrailer();
+            ReadTrailer((Dictionary<string, object>)parser.ReadToken());
         }
 
 	/// <summary>
