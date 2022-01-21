@@ -20,9 +20,23 @@ namespace PDFTest
             Assert.AreEqual(j.number, (uint)0x20);
 	    Assert.AreEqual(j.flags, (byte)0x86);
             Assert.AreEqual(j.type, 6);
-            Assert.AreEqual(j.refCount, (byte)0x6B);
+            Assert.AreEqual(j.refCount, (uint)0x6B);
 	    CollectionAssert.AreEqual(j.references, new int[] { 2, 0x1E, 0x05 });
-            Assert.AreEqual(j.page, (byte)0x04);
+            Assert.AreEqual(j.page, (uint)0x04);
+            Assert.AreEqual(j.length, (uint)0x20);
+        }
+
+	[TestMethod]
+        public void SegmentTest2()
+        {
+            byte[] s = new byte[] { 0x00, 0x00, 0x02, 0x34, 0x40, 0x00, 0x00, 0x00, 0x09, 0x02, 0xfd, 0x01, 0x00, 0x02, 0x01, 0x02, 0x02, 0x02, 0x03, 0x02, 0x00, 0x00, 0x04, 0x01, 0x00, 0x00, 0x00, 0x20 };
+            JBIG2Segment j = new JBIG2Segment(new MemoryStream(s));
+            Assert.AreEqual(j.number, (uint)564);
+            Assert.AreEqual(j.flags, (byte)0x40);
+            Assert.AreEqual(j.type, 0);
+            Assert.AreEqual(j.refCount, (uint)9);
+            CollectionAssert.AreEqual(j.references, new int[] { 1, 0, 2, 1, 2, 2, 2, 3, 2 });
+            Assert.AreEqual(j.page, (uint)1025);
             Assert.AreEqual(j.length, (uint)0x20);
         }
 

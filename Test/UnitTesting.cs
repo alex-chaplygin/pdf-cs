@@ -37,7 +37,10 @@ namespace Microsoft.VisualStudio.TestTools.UnitTesting
 	    else if (o is uint)
 	    {
 		if ((uint)o != (uint)o2)
+		{
+		    Console.WriteLine($"\n {(uint)o} != {(uint)o2}");
 		    Fail();
+		}
 	    }
 	    else if (o is bool)
 	    {
