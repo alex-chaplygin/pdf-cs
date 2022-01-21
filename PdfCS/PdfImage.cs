@@ -35,7 +35,7 @@ namespace PdfCS
         /// <summary>
         /// Преобразованное изображение
         /// </summary>
-        private Bitmap bitmap;
+        public Bitmap bitmap;
 
         /// <summary>
         /// Конструктор создающий изображение

@@ -177,7 +177,8 @@ namespace PdfCS
                 info = (Tuple<int, int>)trailer["Info"];
             if (trailer.ContainsKey("ID") && trailer.ContainsKey("Encrypt"))
 	    {
-		Encryption.Init((Dictionary<string, object>)LoadLink(trailer["Encrypt"]), (object[])trailer["ID"]);
+		Dictionary<string, object> dict;
+		Encryption.Init((Dictionary<string, object>)LoadLink(trailer["Encrypt"], out dict), (object[])trailer["ID"]);
 		if (!Encryption.UserAuthentificate(""))
                     throw new Exception("Требуется пароль");
 	    }
@@ -189,22 +190,21 @@ namespace PdfCS
             }
         }
 
-	/// <summary>
-	///   Загружает объект по ссылке если объект - ссылка
-	/// </summary>
-	private static object LoadLink(object o)
+        /// <summary>
+        ///   Загружает объект по ссылке если объект - ссылка
+        /// </summary>
+        public static object LoadLink(object o, out Dictionary<string, object> dict)
         {
-	    Dictionary<string, object> dict;
-	    
-	    if (o is Tuple<int, int>)
+            dict = null;
+            if (o is Tuple<int, int>)
             {
                 var tuple = (Tuple<int, int>)o;
                 return GetObject(tuple.Item1, out dict);
             }
-	    return o;
-	}
+            return o;
+        }
 
-	/// <summary>
+        /// <summary>
         /// загружает поток ссылок, позиция в файле уже установлена
         /// поток загружается с помощью #25
         /// словарь содержит те же поля, что и обычная таблица ссылок, их нужно считать из словаря #32

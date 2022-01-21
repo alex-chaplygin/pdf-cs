@@ -167,26 +167,32 @@ namespace PdfCS
             {"sc", new Operator(SetFillColor)},
             {"f", new Operator(FillPath)},
             {"F", new Operator(FillPath)},
-	    {"f*", new Operator(FillPathEven)},
-	    {"B", new Operator(FillAndThenStrokePathNonZero)},
+        {"f*", new Operator(FillPathEven)},
+        {"B", new Operator(FillAndThenStrokePathNonZero)},
             {"B*", new Operator(FillAndThenStrokePathEvenOddRule)},
             {"b", new Operator(CloseFillAndThenStrokePathNonZero)},
             {"b*", new Operator(CloseFillAndThenStrokePathEvenOddRule)},
             {"'",  new Operator(MoveAndShowText)},
-	    {"c", new Operator(AddCurve3)},
+        {"c", new Operator(AddCurve3)},
             {"v", new Operator(AddCurve2)},
             {"y", new Operator(AddCurve1)},
 	    {"n", new Operator(() => {}) },
 	    {"W", new Operator(SetClipPath) },
             {"W*", new Operator(SetClipPath2) },
             {"d0", new Operator(SetDisplacement)},
-            {"d1", new Operator(SetDisplacementBoundingBox) }
+            {"d1", new Operator(SetDisplacementBoundingBox) },
+            {"Do", new Operator(PaintObject) }
         };
 
         /// <summary>
         /// стек операндов команд
         /// </summary>
         private static Stack<object> operands;
+
+        /// <summary>
+        /// Словарь ресурсов
+        /// </summary>
+        private static Dictionary<string, object> resources;
 
         /// <summary>
         /// Инициализация графики
@@ -315,11 +321,12 @@ namespace PdfCS
         /// </summary>
         /// <param name="content">поток содержимого страницы (команды графики)</param>
         /// <param name="resources">словарь ресурсов страницы</param>
-        public static void Render(byte[] content, Dictionary<string, object> resources)
+        public static void Render(byte[] content, Dictionary<string, object> resource)
         {
             Parser parser = new Parser(new MemoryStream(content));
             parser.NextChar();
             object temp;
+            resources = resource;
             while (true)
             {
                 temp = parser.ReadToken();
@@ -533,8 +540,8 @@ namespace PdfCS
         }
 
         /// <summary>
-	/// f
-	/// F
+        /// f
+        /// F
         /// Заполнение текущего пути с обходом контура non zero winding
         /// </summary>
         private static void FillPath()
@@ -545,17 +552,17 @@ namespace PdfCS
         }
 
         /// <summary>
-	/// f*
+        /// f*
         /// Заполнение текущего пути с обходом контура even-odd
         /// </summary>
-	private static void FillPathEven()
+        private static void FillPathEven()
         {
             ClosePath();
             currentState.currentPath.FillMode = FillMode.Alternate;
             graphics.FillPath(new SolidBrush(currentState.fillColor), currentState.currentPath);
         }
 
-	/// <summary>
+        /// <summary>
         /// Cначала заполняет контур с правилом не нулевого контура, потом обводит.
         /// 
         /// Operator - B
@@ -604,10 +611,10 @@ namespace PdfCS
         {
             ClosePath();
             FillAndThenStrokePathEvenOddRule();
-        }	
+        }
 
         /// <summary>
-	/// S
+        /// S
         /// Добавляет обводку к текущему пути
         /// </summary>
         private static void StrokePath()
@@ -670,8 +677,8 @@ namespace PdfCS
             int r = (int)operands.Pop();
             return Color.FromArgb(255, r, g, b);
         }
-	
-	/// <summary>
+
+        /// <summary>
         /// x1 y1 x2 y2 x3 y3 c
         /// Добавляет в текущий путь #66 кривую Безье
         /// p1, p2 - контрольные точки
@@ -822,5 +829,35 @@ namespace PdfCS
             double ury = ReadNumber();
             RectangleF boundingBox = new RectangleF((float)llx, (float)lly, (float)urx, (float)ury);
         }	
+
+        /// <summary>
+        /// отрисовка внешнего объекта
+        /// параметр - имя объекта, это имя является ключом в подсловаре XObject в словаре ресурсов
+        /// словарь ресурсов передается как параметр в Render его нужно сохранить в классе как поле
+        /// Dictionary<string, object> resources;
+        /// Значение по ключу в подсловаре XObject является ссылкой на объект - поток
+        /// Его загружаем из PDF файла.Если тип объекта (Type) - Image, то создаем объект PdfImage
+        /// и рисуем bitmap.Оконные координаты получаются путем умножения вектора (0, 0) на матрицу CTM
+        /// размеры изображения(оно может масштабироваться) получаются умножением вектора(1, 1) на матрицу CTM
+        /// нужно нарисовать изображение с новыми размерами, а не с исходными
+        /// </summary>
+        private static void PaintObject()
+        {
+	    Dictionary<string,object> dict;
+	    double x;
+	    double y;
+	    double xx;
+	    double yy;
+            string param = (string)operands.Pop();
+            object link = ((Dictionary<string, object>)resources["XObject"])[param];
+            byte[] stream =  (byte[])PDFFile.LoadLink(link, out dict);
+            if ((string)dict["Type"] == "XObject" && (string)dict["Subtype"] == "Image")
+            {
+                currentState.CTM.MultVector(0, 0, out x, out y);
+                currentState.CTM.MultVector((double)dict["Width"], (double)dict["Height"], out xx, out yy);
+                PdfImage image = new PdfImage(dict, stream);
+                graphics.DrawImage(image.bitmap, (float)x, (float)y, (float)xx, (float)yy);
+            }
+        }
     }
 }
