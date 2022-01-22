@@ -168,16 +168,17 @@ namespace PdfCS
         /// %%EOF
         /// </summary>
         /// 
-        private static void ReadTrailer()
+        private static void ReadTrailer(Dictionary<string, object> trailer)
         {
-            Dictionary<string, object> trailer = (Dictionary<string, object>)parser.ReadToken();
+//            Dictionary<string, object> trailer = (Dictionary<string, object>)parser.ReadToken();
 	    if (root == null)
 		root = (Tuple<int, int>)trailer["Root"];
             if (trailer.ContainsKey("Info")  && info == null)
                 info = (Tuple<int, int>)trailer["Info"];
             if (trailer.ContainsKey("ID") && trailer.ContainsKey("Encrypt"))
 	    {
-		Encryption.Init((Dictionary<string, object>)LoadLink(trailer["Encrypt"]), (object[])trailer["ID"]);
+		Dictionary<string, object> dict;
+		Encryption.Init((Dictionary<string, object>)LoadLink(trailer["Encrypt"], out dict), (object[])trailer["ID"]);
 		if (!Encryption.UserAuthentificate(""))
                     throw new Exception("Требуется пароль");
 	    }
@@ -189,22 +190,21 @@ namespace PdfCS
             }
         }
 
-	/// <summary>
-	///   Загружает объект по ссылке если объект - ссылка
-	/// </summary>
-	private static object LoadLink(object o)
+        /// <summary>
+        ///   Загружает объект по ссылке если объект - ссылка
+        /// </summary>
+        public static object LoadLink(object o, out Dictionary<string, object> dict)
         {
-	    Dictionary<string, object> dict;
-	    
-	    if (o is Tuple<int, int>)
+            dict = null;
+            if (o is Tuple<int, int>)
             {
                 var tuple = (Tuple<int, int>)o;
                 return GetObject(tuple.Item1, out dict);
             }
-	    return o;
-	}
+            return o;
+        }
 
-	/// <summary>
+        /// <summary>
         /// загружает поток ссылок, позиция в файле уже установлена
         /// поток загружается с помощью #25
         /// словарь содержит те же поля, что и обычная таблица ссылок, их нужно считать из словаря #32
@@ -245,13 +245,10 @@ namespace PdfCS
         public static void LoadXRefStream() //метод #36
         {
             Dictionary<string, object> dict;
-	    object o = parser.ReadIndirectObject(out dict); // метод 25
-            byte[] b = (byte[])o;
-            MemoryStream m = new MemoryStream();
-            m.Write(b, 0, b.Length);
-            m.Seek(0, SeekOrigin.Begin);
+            MemoryStream m = new MemoryStream((byte[])parser.ReadIndirectObject(out dict));
             int size = (int)dict["Size"];
             object[] W = (object[])dict["W"];
+	    Console.WriteLine($"XRef size = {size}");
 
             int[] val = new int[3];
 
@@ -259,11 +256,9 @@ namespace PdfCS
             {
                 for (int w = 0; w < 3; w++)
                 {
-                    byte[] bt = new byte[4];
+                    val[w] = 0;
                     for (int k = 0; k < (int)W[w]; k++) //чтение в соответствии с длиной поля
-                        bt[k] = (byte)m.ReadByte();
-                      
-                    val[w] = BitConverter.ToInt32(bt, 0);
+                        val[w] += m.ReadByte() << 8 * ((int)W[w] - k - 1);
                 }
 
                 if (xrefTable == null)
@@ -292,7 +287,9 @@ namespace PdfCS
                     xrefTable[i].streamIndex = val[2]; //индекс объекта внутри потока
                     xrefTable[i].generation = 0; // номер поколения по умолчанию 0
                 }
+		Console.WriteLine($"num = {i} free = {xrefTable[i].free} comp = {xrefTable[i].compressed} ofs = {xrefTable[i].offset} gen = {xrefTable[i].generation} stream = {xrefTable[i].streamNum} index = {xrefTable[i].streamIndex}");
             }
+	    ReadTrailer(dict);
         }
 
 	/// <summary>
@@ -388,7 +385,7 @@ namespace PdfCS
                         xrefTable[index].free = true;
                 }
             }
-            ReadTrailer();
+            ReadTrailer((Dictionary<string, object>)parser.ReadToken());
         }
 
 	/// <summary>
