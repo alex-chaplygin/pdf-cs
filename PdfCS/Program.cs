@@ -11,20 +11,20 @@ namespace PdfCS
     {
         static void Main(string[] args)
         {
-	    /*	    PDFFile.Open(File.OpenRead(args[0]));
-	    Dictionary<string, object> dict = PDFFile.GetPage(1);
-	    foreach (var pair in dict)
-                    {
-                        Console.WriteLine($"{pair.Key} {pair.Value}");
-                    }*/
-	    /*            for (int i = 0; i < PDFFile.xrefTable.Length; i++)
+	    Dictionary<string, object> dict;
+	    PDFFile.Open(File.OpenRead(args[0]));
+	    for (int i = 0; i < PDFFile.xrefTable.Length; i++)
             {
                 if (PDFFile.xrefTable[i].offset == 0)
                     continue;
                 var cur = PDFFile.GetObject(i, out dict);
-                Console.WriteLine($"Объект {i}: {cur.ToString()}");
-            }*/
-
+		Console.Write($"Объект {i}");
+		if (cur is byte[])
+		    DumpStream((byte[])cur);
+		else
+		    Console.WriteLine($" : {cur.ToString()}");
+            }
+	    /*
 	    try
 	    {
 		PDFFile.Open(File.OpenRead(args[0]));
@@ -38,8 +38,16 @@ namespace PdfCS
 	    catch (Exception e)
 	    {
 		Console.WriteLine(e.Message);
-	    }
+	    }*/
         }
+
+	static void DumpStream(byte[] s)
+	{
+	    Console.WriteLine();
+	    for (int i = 0; i < s.Length; i++)
+		Console.Write((char)s[i]);
+	    Console.WriteLine();
+	}
 	
 	static void Print(byte[] arr)
         {

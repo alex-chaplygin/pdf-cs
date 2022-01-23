@@ -256,11 +256,12 @@ namespace PdfCS
             {
                 for (int w = 0; w < 3; w++)
                 {
-                    byte[] bt = new byte[4];
+                    val[w] = 0;
                     for (int k = 0; k < (int)W[w]; k++) //чтение в соответствии с длиной поля
-                        bt[k] = (byte)m.ReadByte();
-                      
-                    val[w] = BitConverter.ToInt32(bt, 0);
+		    {
+			val[w] <<= 8;
+			val[w] += m.ReadByte();
+		    }
                 }
 
                 if (xrefTable == null)
