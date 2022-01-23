@@ -20,14 +20,14 @@ namespace PdfCS
         public string[] encoding;
 
         /// <summary>
-        /// Таблица encodings
+        /// Словарь кодировок с соответствующими индексами в standartCodes.
         /// </summary>
-        public string[,] encodings = new string[headersForTable.Length, standartCodes.Count];
-
-        /// <summary>
-        /// Заголовки таблицы
-        /// </summary>
-        public static string[] headersForTable = { "Glyph", "StandardEncoding", "MacRomanEncoding", "WinAnsiEncoding", "PDFDocEncoding" };
+        private Dictionary<string, int> namesEncodings = new Dictionary<string, int>() {
+            { "StandardEncoding", 0},
+            { "MacRomanEncoding", 1},
+            { "WinAnsiEncoding", 2},
+            { "PDFDocEncoding", 3 }
+        };
 
         private static Dictionary<string, int[]> standartCodes = new Dictionary<string, int[]>
         {
@@ -284,6 +284,7 @@ namespace PdfCS
             encoding = new string[lastChar];
             if (dic.ContainsKey("BaseEncoding"))
                 baseEncoding = (string)dic["BaseEncoding"];
+            CheckNameEncoding(baseEncoding);
             if (dic.ContainsKey("Differences"))
             {
                 var differences = (object[])dic["Differences"];
@@ -298,28 +299,31 @@ namespace PdfCS
                     encoding[(int)differences[startValueIndex] + i - startValueIndex - 1] = (string)differences[i];
                 }
             }
-            FillEncoding(lastChar);
         }
 
         /// <summary>
-        /// Заполнение таблицы данными для последующего поиска.
+        /// Проверка названия кодировки с передачей соответствующего индекса в FillEncoding.
         /// </summary>
-        /// <param name="lastChar">Последний символ.</param>
-        private void FillEncoding(int lastChar)
+        /// <param name="baseEncoding">Название базовой кодировки</param>
+        private void CheckNameEncoding(string baseEncoding)
         {
-            encodings = new string[headersForTable.Length, lastChar + 1];
-
-            for (int i = 0; i < headersForTable.Length; i++)
-            {
-                encodings[i, 0] = headersForTable[i];
-                for (int j = 1; j <= lastChar; j++)
+            foreach (var name in namesEncodings)
+                if (name.Key.Equals(baseEncoding))
                 {
-                    if (i == 0)
-                        encodings[i, j] = standartCodes.ElementAt(j - 1).Key;
-                    else
-                        encodings[i, j] = standartCodes.ElementAt(j - 1).Value[i - 1].ToString();
+                    FillEncoding(name.Value);
+                    break;
                 }
-            }
+        }
+
+        /// <summary>
+        /// Заполнение массива encoding с соответствующей кодировкой.
+        /// </summary>
+        /// <param name="index">Индекс соответствующей кодировки в standartCodes.</param>
+        private void FillEncoding(int index)
+        {
+            for (int i = 0; i < standartCodes.Count; i++)
+                if (standartCodes.ElementAt(i).Value[index] != -1 && standartCodes.ElementAt(i).Value[index] < encoding.Length)
+                    encoding[standartCodes.ElementAt(i).Value[index]] = standartCodes.ElementAt(i).Key;
         }
     }
 }
