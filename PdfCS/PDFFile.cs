@@ -189,10 +189,10 @@ namespace PdfCS
             }
         }
 
-	/// <summary>
-	///   Загружает объект по ссылке если объект - ссылка
-	/// </summary>
-	private static object LoadLink(object o)
+        /// <summary>
+        ///   Загружает объект по ссылке если объект - ссылка
+        /// </summary>
+        public static object LoadLink(object o)
         {
 	    Dictionary<string, object> dict;
 	    
