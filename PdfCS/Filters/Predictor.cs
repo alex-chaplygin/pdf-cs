@@ -52,6 +52,26 @@ namespace PdfCS
 	    if (columns == 0)
 		return data;
 	    byte[] pred = new byte[colors];
+	    if (bpp == 4)
+            {
+		for (int i = 0; i < data.Length * 2 / colors; i++)
+		    for (int j = 0; j < colors; j++)
+		    {
+			if ((i * colors) % columns == 0)
+			    pred[j] = 0;
+			else
+			    if (i % 2 == 0)
+				pred[j] = (byte)((data[(i / 2) - 1 * colors + j] & 0x0f) * 16);
+			    else
+				pred[j] = (byte)(data[((i - 1) / 2) * colors + j] >> 4);
+			if (i % 2 == 0)
+			    data[(i / 2) * colors + j] += pred[j];
+			else
+			    data[(i - 1) / 2 * colors + j] += pred[j];
+		    }
+	    }
+	    else
+	    {
             for (int i = 0; i < data.Length / colors; i++)
                 for (int j = 0; j < colors; j++)
                 {
@@ -61,6 +81,7 @@ namespace PdfCS
                         pred[j] = data[(i - 1) * colors + j];
                     data[i * colors + j] += pred[j];
                 }
+	    }
             return data;
 	}
     }
