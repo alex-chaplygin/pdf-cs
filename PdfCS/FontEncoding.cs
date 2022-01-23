@@ -321,9 +321,9 @@ namespace PdfCS
         /// <param name="index">Индекс соответствующей кодировки в standartCodes.</param>
         private void FillEncoding(int index)
         {
-            for (int i = 0; i < standartCodes.Count; i++)
-                if (standartCodes.ElementAt(i).Value[index] != -1 && standartCodes.ElementAt(i).Value[index] < encoding.Length)
-                    encoding[standartCodes.ElementAt(i).Value[index]] = standartCodes.ElementAt(i).Key;
+            foreach (var code in standartCodes)
+                if (code.Value[index] != -1 && code.Value[index] < encoding.Length)
+                    encoding[code.Value[index]] = code.Key;
         }
     }
 }
