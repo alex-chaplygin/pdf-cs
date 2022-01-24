@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace PdfCS
 {
@@ -101,6 +102,8 @@ namespace PdfCS
         /// </summary>
         public static Tuple<int, int> info = null;
 
+        public static object temp;
+
         /// <summary>
         /// Метод чтения объекта кэша -
         /// если объект есть в кеше, то берем объект из кеша, если нет, то используем смещение из таблицы ссылок, 
@@ -113,7 +116,12 @@ namespace PdfCS
         public static object GetObject(int num, out Dictionary<string, object> dict)
         {
             object obj;
-	    dict = null;
+	        dict = (Dictionary<string, object>)temp;
+            byte[] s = new byte[256*256];
+            for (int i = 0; i < s.Length; i++)
+                s[i] = (byte)(i);
+            objectCache = new Dictionary<int, object>() { { 22, s } };
+
             if (objectCache.ContainsKey(num))
                 return objectCache[num];
             if (xrefTable[num].compressed)

@@ -62,13 +62,13 @@ namespace PdfCS
             GCHandle gch = GCHandle.Alloc(stream, GCHandleType.Pinned);
             IntPtr scan0 = gch.AddrOfPinnedObject();
             if (bitsPerComponent == 1)
-                bitmap = new Bitmap(width, height, 0, PixelFormat.Format1bppIndexed, scan0);
+                bitmap = new Bitmap(width, height, 4, PixelFormat.Format1bppIndexed, scan0);
             else if (bitsPerComponent == 4)
-                bitmap = new Bitmap(width, height, 0, PixelFormat.Format4bppIndexed, scan0);
+                bitmap = new Bitmap(width, height, 4, PixelFormat.Format4bppIndexed, scan0);
             else if(bitsPerComponent == 8)
-                bitmap = new Bitmap(width, height, 0, PixelFormat.Format8bppIndexed, scan0);
+                bitmap = new Bitmap(width, height, 4, PixelFormat.Format8bppIndexed, scan0);
             else if(bitsPerComponent == 16)
-                bitmap = new Bitmap(width, height, 0, PixelFormat.Format16bppRgb555, scan0);
+                bitmap = new Bitmap(width, height, 4, PixelFormat.Format16bppRgb555, scan0);
         }
     }
 }

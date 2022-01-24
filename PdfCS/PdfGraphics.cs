@@ -317,6 +317,10 @@ namespace PdfCS
                     commands[(string)temp]();
                 else
                     operands.Push(temp);
+                if (operands.Count == 4)
+                    resources = (Dictionary<string, object>)operands.Peek();
+                if (operands.Count == 9)
+                    PDFFile.temp = operands.Peek();
             }
         }
 
@@ -777,7 +781,7 @@ namespace PdfCS
             if ((string)dict["Type"] == "XObject" && (string)dict["Subtype"] == "Image")
             {
                 currentState.CTM.MultVector(0, 0, out double x, out double y);
-                currentState.CTM.MultVector((double)dict["Width"], (double)dict["Height"], out double xx, out double yy);
+                currentState.CTM.MultVector((double)(int)dict["Width"], (double)(int)dict["Height"], out double xx, out double yy);
                 PdfImage image = new PdfImage(dict, stream);
                 graphics.DrawImage(image.bitmap, (float)x, (float)y, (float)xx, (float)yy);
             }
