@@ -21,7 +21,7 @@ namespace PdfCS
         /// <summary>
         ///   Последний прочитанный символ
         /// </summary>
-        private char lastChar;
+        public char lastChar;
 
         public Lexer(Stream s)
         {
@@ -266,7 +266,6 @@ namespace PdfCS
             while (lastChar != '\uffff' && !Lexer.IsWhitespace(lastChar) &&
                !Lexer.IsDelimeter(lastChar))
                 res += NextChar();
-            NextChar();
             return res.Substring(0, res.Length - 1);
         }
 
@@ -298,8 +297,10 @@ namespace PdfCS
                 NextChar();
                 if (lastChar != '<')
                     return ReadHex();
-                else
+                else {
+		    NextChar();
                     return "<<";
+		}
             }
             else if (lastChar == '>')
             {

@@ -435,10 +435,15 @@ namespace PdfCS
                 object o = ReadNumber();
 		char c = lastChar;
 		long pos = stream.Position;
-		object o2 = ReadToken();
-		object o3 = ReadToken();
+		Lexer lx = new Lexer(stream);
+		lx.lastChar = lastChar;
+		object o2 = lx.ReadToken();
+		object o3 = lx.ReadToken();
 		if (o is int && o2 is int && o3 is string && (string)o3 == "R")
+		{
+		    lastChar = lx.lastChar;
 		    return Tuple.Create((int)o, (int)o2);
+		}
 		else
 		{
 		    lastChar = c;
