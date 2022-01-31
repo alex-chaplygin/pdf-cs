@@ -16,7 +16,7 @@ namespace PdfCS
         /// <summary>
         ///   Поток, откуда считываются символы
         /// </summary>
-        private Stream stream;
+        protected Stream stream;
 
         /// <summary>
         ///   Последний прочитанный символ
@@ -297,7 +297,8 @@ namespace PdfCS
                 NextChar();
                 if (lastChar != '<')
                     return ReadHex();
-                else {
+                else
+		{
 		    NextChar();
                     return "<<";
 		}
@@ -366,5 +367,23 @@ namespace PdfCS
             }
             return new NameObject(res.Substring(0, res.Length - 1));
         }
+
+	/// <summary>
+        ///   Пропускает конец строки.
+        ///  Конец строки может быть один символ '\n', или два символа '\r' и '\n'
+        ///  первый символ уже прочитан и находится в lastChar
+        ///  пропускает до первого символа (не '\n' и '\r')
+        /// </summary>
+        public void SkipEndOfLine()
+        {
+            if (lastChar == '\n')
+                NextChar();
+            else if (lastChar == '\r')
+            {
+                if (NextChar() != '\n')
+                    throw new Exception("Ошибка при переводе строки");
+                NextChar();
+            }
+        }	
     }
 }
