@@ -31,6 +31,7 @@
     <Compile Include="LZWTest.cs" />
     <Compile Include="PDFFileTest.cs" />
     <Compile Include="JBIG2Test.cs" />
+    <Compile Include="NameTreeTest.cs" />
   </ItemGroup>
 
 </Project>

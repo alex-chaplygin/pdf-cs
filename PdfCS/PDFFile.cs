@@ -74,7 +74,7 @@ namespace PdfCS
         /// <summary>
         /// Кэш объектов - ключ - номер, значение - объект
         /// </summary>
-        private static Dictionary<int, object> objectCache;
+        public static Dictionary<int, object> objectCache;
 
         /// <summary>
         /// Таблица ссылок

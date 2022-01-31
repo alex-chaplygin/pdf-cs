@@ -170,6 +170,7 @@ class TestRunner {
 	ASCIIHexTest ax = new ASCIIHexTest();
 	LZWTest lzw = new LZWTest();
 	JBIG2Test jb = new JBIG2Test();
+	NameTreeTest nt = new NameTreeTest();
         //--------------------------------------------------------------
  
         #region Execute tests
